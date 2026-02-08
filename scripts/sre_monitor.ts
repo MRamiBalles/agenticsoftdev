@@ -90,14 +90,20 @@ async function runSREMonitor() {
         anomalies.forEach(anomaly => {
             const icon = anomaly.severity === 'CRITICAL' ? '🔴' : 'Vk';
             console.log(`   ${icon} [${anomaly.type}] ${anomaly.description}`);
-            if (anomaly.severity === 'CRITICAL') {
-                console.log(`      ⚡ ACTION REQUIRED: Auto-Revert Protocol (Pening Implementation)`);
-            }
-        });
+            if (anomalies.some(a => a.severity === 'CRITICAL')) {
+                console.log(`      ⚡ ACTION REQUIRED: Auto-Revert Protocol ACTIVATED.`);
 
-        // In the next step, we will trigger the Revert logic here.
-        process.exit(1); // Exit with error to signal CI failure
-    }
+                try {
+                    execSync('npx ts-node scripts/ops/revert_change.ts', { stdio: 'inherit' });
+                    console.log("\n✅ [SRE Agent] Threat Neutralized. System restored to safe state.");
+                } catch (error) {
+                    console.error("\n❌ [SRE Agent] Auto-Revert Failed. Immediate human intervention required.");
+                    process.exit(1);
+                }
+            }
+
+            process.exit(1); // Exit with error to signal CI failure (even if reverted, we want to notify)
+        }
 }
 
-runSREMonitor();
+    runSREMonitor();
