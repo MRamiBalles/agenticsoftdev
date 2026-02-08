@@ -17,8 +17,13 @@ This document defines the "Iron Rules" that govern the **Sovereign SDLC Platform
 
 ## Article III: Architectural Standards (Quality)
 1.  **Zero-Tolerance for Cycles**: Circular dependencies between modules are classified as Critical Defects (Severity 10).
-2.  **God Component Limit**: No single file shall exceed 300 Lines of Code AND 10 distinct dependencies.
-3.  **The Guardian's Veto**: The Architect Agent (ATDI Module) has the constitutional power to veto any deployment that violates these standards, regardless of urgency.
+2.  **God Component Limit**: 
+    *   **Max Lines of Code (LOC)**: 300 lines per file.
+    *   **Max Complexity (Cyclomatic)**: 15 per function.
+    *   **Max Dependencies**: 10 imports per module.
+    *   *Violation Effect*: AUTOMATIC REJECTION of the Pull Request.
+3.  **Unstable Matrix**: Stable core components must not depend on unstable/volatile modules (Stable Dependency Principle).
+4.  **The Guardian's Veto**: The Architect Agent (ATDI Module) has the constitutional power to veto any deployment that violates these standards.
 
 ## Article IV: Technology Stack (Sovereignty)
 1.  **Adherence**: All code must adhere to the defined stack:
