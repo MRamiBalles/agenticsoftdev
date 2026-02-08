@@ -131,3 +131,18 @@ Building the "Project Brain" to enable self-healing and learning.
 2.  **Atrophy Protocol (The Terminator):** The "Value Aligner" must proactively propose the **depreciation** of low-value features/code ("The Kill Switch") to combat Digital Atrophy.
 3.  **Strategic XAI:** Every high-level decision must be accompanied by a natural language justification derived from data (e.g., SHAP for Business), preventing "Black Box" management.
 
+
+## 12. Phase 16: Institutionalization & Living Compliance (v3.3)
+*   **Goal**: Make bureaucracy invisible and audit automatic (ISO 42001).
+*   **Action 1**: **Continuous Audit Log (Evidence-as-Code)**. Real-time cryptographic proof of governance events.
+*   **Action 2**: **Interrogable Constitution (RAG)**. Vectorized governance rules for instant agent querying.
+
+## 13. Phase 17: The Cognitive Layer (v3.4)
+*   **Goal**: Prevent project amnesia and enhance decision-making.
+*   **Action 1**: **ADR Engine**. AI-managed Architecture Decision Records.
+*   **Action 2**: **Challenge Agent (Devil's Advocate)**. An agent dedicated to finding logic holes in specs/plans.
+
+## 14. Phase 18: Socio-Technical Alignment (v4.0)
+*   **Goal**: Align team structure with software architecture (Inverse Conway's Law).
+*   **Action 1**: **Conway Friction Radar**. Detect organizational coupling through commit patterns.
+*   **Action 2**: **Process Gardener**. Identify and deprecate zombie bureaucratic processes.
