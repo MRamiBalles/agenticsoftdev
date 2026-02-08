@@ -4,59 +4,87 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { AlertTriangle, CheckCircle, ShieldAlert, User, Bot } from 'lucide-react';
+import { AlertTriangle, CheckCircle, ShieldAlert, User, Bot, Activity } from 'lucide-react';
 import { approveTaskDeployment } from '@/lib/governance';
-// import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react'; // Mocking for now as dependencies might vary
 
 interface RaciCardProps {
     taskId: string;
     taskTitle: string;
     responsibleAgent: string;
-    accountableHumanId: string; // ID of the human
-    accountableHumanName: string; // Display name
-    currentUserId: string; // The user viewing the card
+    accountableHumanId: string;
+    accountableHumanName: string;
+    currentUserId: string;
+    // New Prop for ATDI
+    atdiScore?: number; // Optional until backend is fully connected
+    riskFactors?: string[];
 }
 
 export const RaciCard: React.FC<RaciCardProps> = ({
-    taskId, taskTitle, responsibleAgent, accountableHumanId, accountableHumanName, currentUserId
+    taskId, taskTitle, responsibleAgent, accountableHumanId, accountableHumanName, currentUserId,
+    atdiScore = 0, riskFactors = []
 }) => {
     const [justification, setJustification] = useState('');
     const [status, setStatus] = useState<'PENDING' | 'APPROVED' | 'BLOCKED'>('PENDING');
     const [isSigning, setIsSigning] = useState(false);
 
-    // Mock Supabase client for the UI component interaction
     const mockSupabase = { from: () => ({ insert: async () => ({ error: null }) }) };
-
     const isAccountable = currentUserId === accountableHumanId;
+
+    // ATDI Logic
+    const isHighRisk = atdiScore >= 15;
+    const isMediumRisk = atdiScore >= 5 && atdiScore < 15;
+
+    let riskColor = "bg-green-100 text-green-800 border-green-200";
+    let riskLabel = "Low Risk";
+
+    if (isHighRisk) {
+        riskColor = "bg-red-100 text-red-800 border-red-200";
+        riskLabel = "CRITICAL RISK";
+    } else if (isMediumRisk) {
+        riskColor = "bg-yellow-100 text-yellow-800 border-yellow-200";
+        riskLabel = "Medium Risk";
+    }
 
     const handleApprove = async () => {
         if (!justification) return;
         setIsSigning(true);
-
         // Simulate API call
         const result = await approveTaskDeployment(mockSupabase, taskId, currentUserId, justification);
-
-        if (result.success) {
-            setStatus('APPROVED');
-        }
+        if (result.success) setStatus('APPROVED');
         setIsSigning(false);
     };
 
     return (
-        <Card className="w-[450px] border-l-4 border-l-yellow-500 shadow-lg">
+        <Card className={`w-[450px] shadow-lg border-l-4 ${isHighRisk ? 'border-l-red-500' : 'border-l-yellow-500'}`}>
             <CardHeader>
                 <div className="flex justify-between items-center">
                     <CardTitle className="text-lg">Governance Gatekeeper</CardTitle>
-                    {status === 'PENDING' && <Badge variant="outline" className="text-yellow-600 border-yellow-500 bg-yellow-50">Wait for Sign</Badge>}
-                    {status === 'APPROVED' && <Badge className="bg-green-600">Approved</Badge>}
+                    <div className={`px-2 py-1 rounded-full text-xs font-bold border ${riskColor} flex items-center gap-1`}>
+                        <Activity size={12} />
+                        ATDI: {atdiScore} ({riskLabel})
+                    </div>
                 </div>
                 <CardDescription>ISO 42001 Accountability Check</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
 
+                {/* Risk Report Section */}
+                {(isHighRisk || isMediumRisk) && (
+                    <div className="bg-red-50 p-3 rounded border border-red-100 text-sm">
+                        <p className="font-semibold text-red-800 flex items-center gap-2">
+                            <ShieldAlert size={16} /> Architectural Smells Detected:
+                        </p>
+                        <ul className="list-disc list-inside mt-1 text-red-700 text-xs">
+                            {riskFactors.length > 0 ? riskFactors.map((r, i) => (
+                                <li key={i}>{r}</li>
+                            )) : <li>Unspecified architectural debt.</li>}
+                        </ul>
+                    </div>
+                )}
+
                 <div className="grid grid-cols-2 gap-4 text-sm">
                     <div className="flex flex-col space-y-1 p-3 bg-slate-50 rounded-md border">
-                        <span className="text-muted-foreground flex items-center gap-1"><Bot size={14} /> Responsible (Agent)</span>
+                        <span className="text-muted-foreground flex items-center gap-1"><Bot size={14} /> Responsible (Amount)</span>
                         <span className="font-mono font-bold text-blue-600">{responsibleAgent}</span>
                     </div>
                     <div className="flex flex-col space-y-1 p-3 bg-slate-50 rounded-md border">
@@ -79,10 +107,10 @@ export const RaciCard: React.FC<RaciCardProps> = ({
                                         <p>By signing, you accept full legal responsibility for this deployment under ISO 42001.</p>
                                     </div>
                                     <Textarea
-                                        placeholder="Mandatory Justification (Why is this safe?)"
+                                        placeholder={isHighRisk ? "MANDATORY: Explain why you are overriding the Architect Agent..." : "Mandatory Justification (Why is this safe?)"}
                                         value={justification}
                                         onChange={(e) => setJustification(e.target.value)}
-                                        className="text-sm"
+                                        className={`text-sm ${isHighRisk ? 'border-red-300 focus:ring-red-500' : ''}`}
                                     />
                                 </div>
                             ) : (
@@ -108,11 +136,11 @@ export const RaciCard: React.FC<RaciCardProps> = ({
                     <>
                         <Button variant="ghost" onClick={() => setStatus('BLOCKED')}>Reject</Button>
                         <Button
-                            className="bg-green-600 hover:bg-green-700 text-white"
-                            disabled={justification.length < 10 || isSigning}
+                            className={`${isHighRisk ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'} text-white transition-colors`}
+                            disabled={justification.length < (isHighRisk ? 50 : 10) || isSigning} // Harder to approve high risk
                             onClick={handleApprove}
                         >
-                            {isSigning ? "Signing..." : "Cryptographic Sign & Approve"}
+                            {isSigning ? "Signing..." : isHighRisk ? "Override & Sign (High Risk)" : "Cryptographic Sign & Approve"}
                         </Button>
                     </>
                 )}

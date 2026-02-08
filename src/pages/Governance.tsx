@@ -3,30 +3,32 @@ import React, { useEffect, useState } from 'react';
 import { RaciCard } from '../components/governance/RaciCard';
 import { RaciMatrixEntry } from '../types/governance';
 import { ShieldAlert } from 'lucide-react';
-// import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
 
 export default function GovernanceDashboard() {
-    const [tasks, setTasks] = useState<RaciMatrixEntry[]>([]);
+    const [tasks, setTasks] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     // Mock Data for "Dogfooding" Demo
     useEffect(() => {
-        // In real app: const { data } = await supabase.from('task_assignments').select('*');
-        const mockTasks: RaciMatrixEntry[] = [
+        const mockTasks = [
             {
                 id: '123e4567-e89b-12d3-a456-426614174000',
                 task_id: 'FEAT-204: Governance Module UI',
                 responsible_agent_id: 'Agent-Architect',
                 role: 'RACI',
-                accountable_user_id: 'user-123', // Matches current user for demo
+                accountable_user_id: 'user-123',
+                atdiScore: 2, // Low Risk
+                riskFactors: [],
                 created_at: new Date().toISOString()
             },
             {
                 id: '123e4567-e89b-12d3-a456-426614174001',
-                task_id: 'INFRA-002: Drop Database Table',
+                task_id: 'INFRA-002: Monolith Refactor',
                 responsible_agent_id: 'Chaos-Monkey-Agent',
                 role: 'RACI',
                 accountable_user_id: 'user-123',
+                atdiScore: 25, // CRITICAL RISK
+                riskFactors: ['Cyclic Dependency: auth.ts <-> user.ts', 'God Component: utils.ts (>500 LOC)'],
                 created_at: new Date().toISOString()
             }
         ];
@@ -60,8 +62,10 @@ export default function GovernanceDashboard() {
                             taskTitle={task.task_id}
                             responsibleAgent={task.responsible_agent_id || 'Unknown-AI'}
                             accountableHumanId={task.accountable_user_id}
-                            accountableHumanName={currentUser.name} // Mock name lookup
+                            accountableHumanName={currentUser.name}
                             currentUserId={currentUser.id}
+                            atdiScore={task.atdiScore}
+                            riskFactors={task.riskFactors}
                         />
                     ))
                 )}
