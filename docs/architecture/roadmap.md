@@ -84,3 +84,16 @@ Building the "Project Brain" to enable self-healing and learning.
 *   **Goal**: Autonomous incident response.
 *   **Scenario**: Test fails -> Agent analyzes log -> Agent proposes fix -> Guardian validates -> Human approves.
 
+## 6. Phase 8: Advanced Intelligence (The Accessible Brain)
+*   **Strategic Priority**: Explainability (XAI) via Deterministic Logic (Phase 8a) then ML (Phase 8b).
+*   **Goal**: Satisfy Constitution Art I.2 ("Right to Explanation") without heavy Python infrastructure initially.
+*   **Feature**: **Heuristic Risk Analysis (Deterministic SHAP)**.
+    *   **Phase 8a (TypeScript)**: Calculate exact marginal contribution of files to the ATDI score (Math-based).
+    *   **Phase 8b (Future)**: Full SHAP/LIME when ML models are integrated for prediction.
+
+## 7. Phase 9: Fortress Security (The Shield)
+*   **Goal**: Hard-gating deployments on security, not just architecture.
+*   **Tools**:
+    *   **SAST Integration**: Snyk/SonarQube blocking pipelines.
+    *   **Dependency Audit**: Automated `npm audit` checks in the Guardian.
+
