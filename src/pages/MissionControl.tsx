@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
 import { HealthMonitor } from '../components/mission_control/HealthMonitor';
 import { TimelineFeed } from '../components/mission_control/TimelineFeed';
 import { ConeWidget } from '../components/mission_control/ConeWidget';
 import { RaciCard } from '../components/governance/RaciCard';
-import { Satellite, Shield, LayoutDashboard, Brain } from 'lucide-react';
+import { Satellite, Shield, LayoutDashboard, Brain, Users, Network, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AgentReasoningTimeline } from "@/components/governance/AgentReasoningTimeline";
+import { OrgDebtHeatmap } from "@/components/governance/OrgDebtHeatmap";
+import { ArchitectureRadar } from "@/components/governance/ArchitectureRadar";
+import { OperationsLog } from "@/components/ops/OperationsLog";
 
 // Mock Data Loaders (Simulating API calls)
 import adrData from '../../.ai/knowledge_base/adr_summary.json';
