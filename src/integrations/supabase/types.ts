@@ -226,6 +226,139 @@ export type Database = {
         }
         Relationships: []
       }
+      sdd_agent_messages: {
+        Row: {
+          agent_name: string | null
+          content: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          phase: string
+          project_id: string
+          role: string
+        }
+        Insert: {
+          agent_name?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          phase: string
+          project_id: string
+          role: string
+        }
+        Update: {
+          agent_name?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          phase?: string
+          project_id?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sdd_agent_messages_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "sdd_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sdd_documents: {
+        Row: {
+          content: string
+          created_at: string
+          created_by: string | null
+          doc_type: string
+          generated_by: string | null
+          id: string
+          phase: string
+          project_id: string
+          review_comment: string | null
+          reviewed_by: string | null
+          status: string
+          title: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          doc_type: string
+          generated_by?: string | null
+          id?: string
+          phase: string
+          project_id: string
+          review_comment?: string | null
+          reviewed_by?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          doc_type?: string
+          generated_by?: string | null
+          id?: string
+          phase?: string
+          project_id?: string
+          review_comment?: string | null
+          reviewed_by?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sdd_documents_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "sdd_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sdd_projects: {
+        Row: {
+          created_at: string
+          created_by: string
+          current_phase: string
+          description: string | null
+          id: string
+          methodology: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          current_phase?: string
+          description?: string | null
+          id?: string
+          methodology?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          current_phase?: string
+          description?: string | null
+          id?: string
+          methodology?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
