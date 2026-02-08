@@ -1,0 +1,20 @@
+{
+  "timestamp": "2026-02-08T06:13:00.690Z",
+  "violations": [
+    {
+      "file": "src\\secrets.ts",
+      "line": 3,
+      "type": "SECRET",
+      "message": "Potential OpenAI Chain Key exposed (Redacted)",
+      "severity": "CRITICAL"
+    },
+    {
+      "file": "src\\secrets.ts",
+      "line": 4,
+      "type": "SECRET",
+      "message": "Potential AWS Access Key exposed (Redacted)",
+      "severity": "CRITICAL"
+    }
+  ],
+  "total_penalty": 1000
+}
