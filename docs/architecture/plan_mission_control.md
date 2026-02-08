@@ -3,6 +3,10 @@
 ## Goal
 Build the `MissionControl` page and integrating components.
 
+## User Review Required
+> [!NOTE]
+> No breaking changes. UI addition only.
+
 ## Proposed Changes
 
 ### 1. Data Layer (`src/lib/mission_control.ts`)
@@ -22,7 +26,7 @@ Build the `MissionControl` page and integrating components.
 *   Add route `/mission-control` in `App.tsx`.
 *   Update `AppNavbar.tsx` to include link.
 
-## Verification
+## Verification Plan
 *   **Visual Check**:
     *   Verify ADR-001 appears in timeline.
     *   Verify ATDI score is 0.0 (Green).
