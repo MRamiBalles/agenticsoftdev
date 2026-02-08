@@ -65,3 +65,22 @@ The platform references its own documentation as the source of truth for Agents.
 *   `.ai/knowledge_base/atdi_formula.md`: Technical debt calculation.
 *   `.ai/knowledge_base/moral_crumple_zones.md`: UI safety protocols.
 *   `.ai/knowledge_base/sdd_manifesto.md`: Coding philosophy.
+
+## 5. Vision v2.0: The Sovereign Memory
+Building the "Project Brain" to enable self-healing and learning.
+
+### A. Project Constitution (✅ STARTED)
+*   **Goal**: Ensure every agent prompt is grounded in immutable rules.
+*   **Deliverable**: `constitution.md` (The "System of Quality").
+
+### B. Mission Control Dashboard
+*   **Goal**: Visualize the state of the project beyond simple tasks.
+*   **Features**:
+    *   **Debt Thermometer**: Real-time ATDI gauge.
+    *   **Con of Uncertainty**: Visualization of project risk reducing over time.
+    *   **Sovereign Chat**: Native interface to interact with Agents (Modify Spec, Request Audits).
+
+### C. Self-Healing Pipelines (SRE Agent)
+*   **Goal**: Autonomous incident response.
+*   **Scenario**: Test fails -> Agent analyzes log -> Agent proposes fix -> Guardian validates -> Human approves.
+
