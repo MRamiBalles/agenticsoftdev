@@ -3,8 +3,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { parseArgs } from 'util';
 
+import { FlightRecorder } from '../lib/flight_recorder.ts';
+
 // Configuration
 const CONSTITUTION_PATH = path.join(process.cwd(), '.specify/memory/constitution.md');
+const recorder = new FlightRecorder("GOVERNANCE_AGENT", "constitution-check");
 
 // Critical Actions requiring Human Accountability (Article I)
 const CRITICAL_ACTIONS = [
@@ -57,7 +60,8 @@ async function checkConstitution() {
         if (!signature || !signature.startsWith('SIG-HUMAN-')) {
             blockAction(
                 "Article I (Cryptographic Sovereignty)",
-                `Action '${action}' is classified as CRITICAL. It requires a valid Human Signature (starting with SIG-HUMAN-).`
+                `Action '${action}' is classified as CRITICAL. It requires a valid Human Signature (starting with SIG-HUMAN-).`,
+                "A.9.3" // ISO: Human Oversight
             );
             return;
         }
@@ -66,22 +70,21 @@ async function checkConstitution() {
 
     // 2. Article II Check: Role Restriction
     // "AI Agents are strictly limited to the role of Responsible (R)... They may never hold Accountability"
-    // If the action implies taking Accountability (like deployment) and the agent is acting alone without signature, it's a violation. 
-    // (This overlaps with Art I, but let's check explicit Role claims)
     if (agentRole === 'Accountable') {
         blockAction(
             "Article II (Role Restriction)",
-            `AI Agents cannot hold the 'Accountable' role. You must act as 'Responsible' or 'Consulted'.`
+            `AI Agents cannot hold the 'Accountable' role. You must act as 'Responsible' or 'Consulted'.`,
+            "A.3.2" // ISO: Roles & Responsibilities
         );
         return;
     }
 
     // 3. General Constitution Check (Keyword Search in Constitution)
-    // Ensure the Constitution actually allows this mechanism (Self-Check)
     if (!constitutionText.includes('Article I')) {
         blockAction(
             "Constitutional Integrity",
-            "The Constitution file appears corrupted or invalid."
+            "The Constitution file appears corrupted or invalid.",
+            "A.6.2.8" // ISO: Event Logging (Integrity Failure)
         );
         return;
     }
@@ -90,12 +93,32 @@ async function checkConstitution() {
     console.log(`\n✅ [GOVERNANCE] Action '${action}' is APPROVED under the Sovereign SDLC Constitution.`);
     console.log("   - Chain of Custody: Valid");
     console.log("   - Risk Level: Acceptable");
+
+    recorder.log(
+        "GOVERNANCE_CHECK",
+        `Action '${action}' approved by Constitution.`,
+        "GOVERNANCE_CHECK",
+        { action, agentRole },
+        "SUCCESS",
+        "A.6.2.8", // ISO: Logging
+        signature
+    );
 }
 
-function blockAction(article: string, reason: string) {
+function blockAction(article: string, reason: string, isoControl: any = "A.6.2.8") {
     console.error(`\n⛔ [GOVERNANCE] Action BLOCKED by Guardian.`);
     console.error(`   - Violation: ${article}`);
     console.error(`   - Reason: ${reason}`);
+
+    recorder.log(
+        "GOVERNANCE_BLOCK",
+        `Action blocked due to ${article}`,
+        "GOVERNANCE_CHECK",
+        { reason, article },
+        "BLOCKED",
+        isoControl
+    );
+
     process.exit(1); // Fail build/pipeline
 }
 

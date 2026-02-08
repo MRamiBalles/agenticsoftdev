@@ -28,10 +28,24 @@ interface OrgDebtReport {
     }>;
 }
 
+
+// ISO 42001 Control Mapping
+export type IsoControl =
+    | "A.3.2" // Roles and Responsibilities
+    | "A.4.6" // Impact Assessment
+    | "A.6.2.8" // Event Logging
+    | "A.7.2" // Transparency
+    | "A.9.3"; // Human Oversight
+
+interface AuditEntry extends FlightRecorderEntry {
+    iso_control?: IsoControl;
+    signature?: string; // Cryptographic proof if available
+}
+
 export class FlightRecorder {
-    private agentId: string;
-    private sessionId: string;
-    private orgDebtPath = path.join(process.cwd(), 'src', 'data', 'org_debt_report.json');
+    protected agentId: string;
+    protected sessionId: string;
+    protected orgDebtPath = path.join(process.cwd(), 'src', 'data', 'org_debt_report.json');
 
     constructor(agentId: string, sessionId: string) {
         this.agentId = agentId;
@@ -39,7 +53,7 @@ export class FlightRecorder {
         this.ensureLedgerExists();
     }
 
-    private ensureLedgerExists() {
+    protected ensureLedgerExists() {
         const dir = path.dirname(LEDGER_PATH);
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir, { recursive: true });
@@ -49,7 +63,7 @@ export class FlightRecorder {
         }
     }
 
-    private getLastEntryHash(): string {
+    protected getLastEntryHash(): string {
         try {
             const data = fs.readFileSync(LEDGER_PATH, 'utf-8');
             const lines = data.trim().split('\n');
@@ -65,7 +79,8 @@ export class FlightRecorder {
         }
     }
 
-    private redactSecrets(payload: any): any {
+    protected redactSecrets(payload: any): any {
+        if (!payload) return {};
         // Simple heuristic redaction for the log (aligned with Phase C)
         const str = JSON.stringify(payload);
         // Regex for sk-, AKIA, etc.
@@ -101,7 +116,7 @@ export class FlightRecorder {
             return { allowed: true };
 
         } catch (error) {
-            console.error("⚠️ Error reading organizational intelligence:", error);
+            // console.error("⚠️ Error reading organizational intelligence:", error);
             return { allowed: true };
         }
     }
@@ -118,7 +133,7 @@ export class FlightRecorder {
                         "GOVERNANCE_INTERVENTION",
                         `Attempt to modify contested file: ${targetPath}`,
                         "GOVERNANCE_CHECK",
-                        { outcome: 'BLOCKED', reason: governanceCheck.reason },
+                        { outcome: 'BLOCKED', reason: governanceCheck.reason, iso_control: "A.3.2" },
                         "BLOCKED"
                     );
                     throw new Error(governanceCheck.reason);
@@ -133,9 +148,11 @@ export class FlightRecorder {
         reasoning: string,
         actionType: "FILE_WRITE" | "SHELL_EXEC" | "PLAN_DECISION" | "GOVERNANCE_CHECK" | "GOVERNANCE_INTERVENTION",
         payload: any,
-        outcome: "SUCCESS" | "FAILURE" | "BLOCKED" = "SUCCESS"
+        outcome: "SUCCESS" | "FAILURE" | "BLOCKED" = "SUCCESS",
+        isoControl?: IsoControl,
+        signature?: string
     ) {
-        const entry: FlightRecorderEntry = {
+        const entry: AuditEntry = {
             id: crypto.randomUUID(),
             timestamp: new Date().toISOString(),
             previous_hash: this.getLastEntryHash(), // Cryptographic Chain
@@ -145,17 +162,15 @@ export class FlightRecorder {
             chain_of_thought: reasoning,
             action_type: actionType as any,
             action_payload: this.redactSecrets(payload),
-            outcome: outcome
+            outcome: outcome,
+            iso_control: isoControl,
+            signature: signature
         };
 
         const logLine = JSON.stringify(entry);
         fs.appendFileSync(LEDGER_PATH, logLine + '\n');
 
-        console.log(`📼 [FlightRecorder] Logged action: ${actionType} (${entry.id.substring(0, 8)})`);
+        const isoTag = isoControl ? `[ISO ${isoControl}]` : '';
+        console.log(`📼 [FlightRecorder]${isoTag} Logged action: ${actionType} (${entry.id.substring(0, 8)})`);
     }
 }
-
-
-// Example Usage (for testing)
-// const recorder = new FlightRecorder("ArchitectAgent-01", "session-123");
-// recorder.log("User Request", "I need to block bad code", "GOVERNANCE_CHECK", { violations: ["God Class"] }, "BLOCKED");

@@ -30,6 +30,7 @@ async function signOff() {
     console.log(`\n   (Copy this token to authorize the Agent's action)`);
 
     // Log to Ledger
+    // Log to Ledger
     recorder.log(
         "HUMAN_AUTHORIZATION",
         `Human Architect explicitly authorized critical action '${action}'.`,
@@ -39,7 +40,9 @@ async function signOff() {
             signature: signature,
             comments: comments
         },
-        "SUCCESS"
+        "SUCCESS",
+        "A.9.3", // ISO: Human Oversight
+        signature // Cryptographic Proof
     );
 
     console.log(`\n📝 Event logged to Flight Recorder.`);
