@@ -55,7 +55,7 @@ export const RaciCard: React.FC<RaciCardProps> = ({
     };
 
     return (
-        <Card className={`w-[450px] shadow-lg border-l-4 ${isHighRisk ? 'border-l-red-500' : 'border-l-yellow-500'}`}>
+        <Card className={`w-[480px] shadow-lg border-l-4 ${isHighRisk ? 'border-l-red-500' : 'border-l-yellow-500'}`}>
             <CardHeader>
                 <div className="flex justify-between items-center">
                     <CardTitle className="text-lg">Governance Gatekeeper</CardTitle>
