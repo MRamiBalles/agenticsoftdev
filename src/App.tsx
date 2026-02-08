@@ -12,6 +12,7 @@ import AdminPage from "./pages/AdminPage";
 import ProjectsPage from "./pages/ProjectsPage";
 import PipelinePage from "./pages/PipelinePage";
 import GovernanceDashboard from "./pages/Governance";
+import MissionControl from "./pages/MissionControl";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/projects" element={<ProjectsPage />} />
             <Route path="/pipeline/:projectId" element={<PipelinePage />} />
             <Route path="/governance" element={<GovernanceDashboard />} />
+            <Route path="/mission-control" element={<MissionControl />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

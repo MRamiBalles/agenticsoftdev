@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { Shield, BookOpen, FileText, LogOut, LogIn, LayoutDashboard, Workflow } from "lucide-react";
+import { Shield, BookOpen, FileText, LogOut, LogIn, LayoutDashboard, Workflow, Satellite } from "lucide-react";
 
 const AppNavbar = () => {
   const { user, isAdmin, signOut } = useAuth();
@@ -13,6 +13,7 @@ const AppNavbar = () => {
 
   const navLinks = [
     { path: "/", label: "Inicio", icon: Shield, exact: true },
+    { path: "/mission-control", label: "Mission Control", icon: Satellite },
     { path: "/constitution", label: "Constitución", icon: BookOpen },
     ...(user ? [{ path: "/projects", label: "Pipeline", icon: Workflow }] : []),
     ...(user ? [{ path: "/decisions", label: "ADR", icon: FileText }] : []),
@@ -38,8 +39,8 @@ const AppNavbar = () => {
               key={path}
               to={path}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${isActive(path)
-                  ? "bg-primary/10 text-primary border border-primary/20"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                ? "bg-primary/10 text-primary border border-primary/20"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 }`}
             >
               <Icon className="w-3.5 h-3.5" />
