@@ -68,16 +68,31 @@ export const RaciCard: React.FC<RaciCardProps> = ({
             </CardHeader>
             <CardContent className="space-y-4">
 
+                {/* Security Threats Section (The Shield) */}
+                {riskFactors.some(r => r.includes("SECRET") || r.includes("VULNERABILITY") || r.includes("CRITICAL")) && (
+                    <div className="bg-red-100 p-3 rounded border border-red-300 text-sm animate-pulse">
+                        <p className="font-bold text-red-900 flex items-center gap-2">
+                            <ShieldAlert size={16} /> SECURITY THREAT DETECTED
+                        </p>
+                        <ul className="list-disc list-inside mt-1 text-red-800 text-xs font-mono">
+                            {riskFactors.filter(r => r.includes("SECRET") || r.includes("VULNERABILITY")).map((r, i) => (
+                                <li key={i}>{r}</li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
+
                 {/* Risk Report Section */}
                 {(isHighRisk || isMediumRisk) && (
-                    <div className="bg-red-50 p-3 rounded border border-red-100 text-sm">
-                        <p className="font-semibold text-red-800 flex items-center gap-2">
-                            <ShieldAlert size={16} /> Architectural Smells Detected:
+                    <div className="bg-amber-50 p-3 rounded border border-amber-100 text-sm">
+                        <p className="font-semibold text-amber-800 flex items-center gap-2">
+                            <Activity size={16} /> Architectural Smells Detected:
                         </p>
-                        <ul className="list-disc list-inside mt-1 text-red-700 text-xs">
-                            {riskFactors.length > 0 ? riskFactors.map((r, i) => (
-                                <li key={i}>{r}</li>
-                            )) : <li>Unspecified architectural debt.</li>}
+                        <ul className="list-disc list-inside mt-1 text-amber-700 text-xs">
+                            {riskFactors.filter(r => !r.includes("SECRET") && !r.includes("VULNERABILITY")).length > 0 ?
+                                riskFactors.filter(r => !r.includes("SECRET") && !r.includes("VULNERABILITY")).map((r, i) => (
+                                    <li key={i}>{r}</li>
+                                )) : <li>Complexity overhead.</li>}
                         </ul>
                     </div>
                 )}
