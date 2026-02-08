@@ -1,0 +1,841 @@
+{
+  "generated_at": "2026-02-08T07:14:30.529Z",
+  "circular_dependencies": [
+    [
+      "sabotage/cycle_a.ts",
+      "sabotage/cycle_b.ts"
+    ]
+  ],
+  "hubs": [],
+  "unstable_nodes": [
+    {
+      "id": "components/ModulesSection.tsx",
+      "fanIn": 0,
+      "fanOut": 1,
+      "instability": 1,
+      "isHub": false
+    },
+    {
+      "id": "integrations/supabase/client.ts",
+      "fanIn": 0,
+      "fanOut": 1,
+      "instability": 1,
+      "isHub": false
+    },
+    {
+      "id": "lib/governance.ts",
+      "fanIn": 0,
+      "fanOut": 1,
+      "instability": 1,
+      "isHub": false
+    },
+    {
+      "id": "main.tsx",
+      "fanIn": 0,
+      "fanOut": 2,
+      "instability": 1,
+      "isHub": false
+    },
+    {
+      "id": "App.tsx",
+      "fanIn": 1,
+      "fanOut": 10,
+      "instability": 0.9090909090909091,
+      "isHub": false
+    },
+    {
+      "id": "pages/MissionControl.tsx",
+      "fanIn": 1,
+      "fanOut": 5,
+      "instability": 0.8333333333333334,
+      "isHub": false
+    },
+    {
+      "id": "pages/Governance.tsx",
+      "fanIn": 1,
+      "fanOut": 2,
+      "instability": 0.6666666666666666,
+      "isHub": false
+    },
+    {
+      "id": "components/governance/RaciCard/index.tsx",
+      "fanIn": 2,
+      "fanOut": 2,
+      "instability": 0.5,
+      "isHub": false
+    },
+    {
+      "id": "components/governance/RaciCard/layout.tsx",
+      "fanIn": 1,
+      "fanOut": 1,
+      "instability": 0.5,
+      "isHub": false
+    },
+    {
+      "id": "sabotage/cycle_a.ts",
+      "fanIn": 1,
+      "fanOut": 1,
+      "instability": 0.5,
+      "isHub": false
+    },
+    {
+      "id": "sabotage/cycle_b.ts",
+      "fanIn": 1,
+      "fanOut": 1,
+      "instability": 0.5,
+      "isHub": false
+    },
+    {
+      "id": "../.ai/knowledge_base/adr_summary.json",
+      "fanIn": 1,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    {
+      "id": "components/AppNavbar.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    {
+      "id": "components/ArchitectureCore.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    {
+      "id": "components/BadComponent.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    {
+      "id": "components/CriticalFactors.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    {
+      "id": "components/Footer.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    {
+      "id": "components/HeroSection.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    {
+      "id": "components/ModuleCard.tsx",
+      "fanIn": 1,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    {
+      "id": "components/NavLink.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    }
+  ],
+  "sdp_violations": [],
+  "metrics": {
+    "../.ai/knowledge_base/adr_summary.json": {
+      "id": "../.ai/knowledge_base/adr_summary.json",
+      "fanIn": 1,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "App.tsx": {
+      "id": "App.tsx",
+      "fanIn": 1,
+      "fanOut": 10,
+      "instability": 0.9090909090909091,
+      "isHub": false
+    },
+    "components/AppNavbar.tsx": {
+      "id": "components/AppNavbar.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ArchitectureCore.tsx": {
+      "id": "components/ArchitectureCore.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/BadComponent.tsx": {
+      "id": "components/BadComponent.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/CriticalFactors.tsx": {
+      "id": "components/CriticalFactors.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/Footer.tsx": {
+      "id": "components/Footer.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/HeroSection.tsx": {
+      "id": "components/HeroSection.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ModuleCard.tsx": {
+      "id": "components/ModuleCard.tsx",
+      "fanIn": 1,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ModulesSection.tsx": {
+      "id": "components/ModulesSection.tsx",
+      "fanIn": 0,
+      "fanOut": 1,
+      "instability": 1,
+      "isHub": false
+    },
+    "components/NavLink.tsx": {
+      "id": "components/NavLink.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/governance/AgentReasoningTimeline.tsx": {
+      "id": "components/governance/AgentReasoningTimeline.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/governance/AuditLogViewer.tsx": {
+      "id": "components/governance/AuditLogViewer.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/governance/OrgDebtHeatmap.tsx": {
+      "id": "components/governance/OrgDebtHeatmap.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/governance/RaciCard/index.tsx": {
+      "id": "components/governance/RaciCard/index.tsx",
+      "fanIn": 2,
+      "fanOut": 2,
+      "instability": 0.5,
+      "isHub": false
+    },
+    "components/governance/RaciCard/layout.tsx": {
+      "id": "components/governance/RaciCard/layout.tsx",
+      "fanIn": 1,
+      "fanOut": 1,
+      "instability": 0.5,
+      "isHub": false
+    },
+    "components/governance/RaciCard/logic.ts": {
+      "id": "components/governance/RaciCard/logic.ts",
+      "fanIn": 2,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/mission_control/ConeWidget.tsx": {
+      "id": "components/mission_control/ConeWidget.tsx",
+      "fanIn": 1,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/mission_control/HealthMonitor.tsx": {
+      "id": "components/mission_control/HealthMonitor.tsx",
+      "fanIn": 1,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/mission_control/TimelineFeed.tsx": {
+      "id": "components/mission_control/TimelineFeed.tsx",
+      "fanIn": 1,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/pipeline/AgentChat.tsx": {
+      "id": "components/pipeline/AgentChat.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/pipeline/DocumentEditor.tsx": {
+      "id": "components/pipeline/DocumentEditor.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/pipeline/PipelineVisualizer.tsx": {
+      "id": "components/pipeline/PipelineVisualizer.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/accordion.tsx": {
+      "id": "components/ui/accordion.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/alert-dialog.tsx": {
+      "id": "components/ui/alert-dialog.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/alert.tsx": {
+      "id": "components/ui/alert.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/aspect-ratio.tsx": {
+      "id": "components/ui/aspect-ratio.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/avatar.tsx": {
+      "id": "components/ui/avatar.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/badge.tsx": {
+      "id": "components/ui/badge.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/breadcrumb.tsx": {
+      "id": "components/ui/breadcrumb.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/button.tsx": {
+      "id": "components/ui/button.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/calendar.tsx": {
+      "id": "components/ui/calendar.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/card.tsx": {
+      "id": "components/ui/card.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/carousel.tsx": {
+      "id": "components/ui/carousel.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/chart.tsx": {
+      "id": "components/ui/chart.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/checkbox.tsx": {
+      "id": "components/ui/checkbox.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/collapsible.tsx": {
+      "id": "components/ui/collapsible.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/command.tsx": {
+      "id": "components/ui/command.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/context-menu.tsx": {
+      "id": "components/ui/context-menu.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/dialog.tsx": {
+      "id": "components/ui/dialog.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/drawer.tsx": {
+      "id": "components/ui/drawer.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/dropdown-menu.tsx": {
+      "id": "components/ui/dropdown-menu.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/form.tsx": {
+      "id": "components/ui/form.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/hover-card.tsx": {
+      "id": "components/ui/hover-card.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/input-otp.tsx": {
+      "id": "components/ui/input-otp.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/input.tsx": {
+      "id": "components/ui/input.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/label.tsx": {
+      "id": "components/ui/label.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/menubar.tsx": {
+      "id": "components/ui/menubar.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/navigation-menu.tsx": {
+      "id": "components/ui/navigation-menu.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/pagination.tsx": {
+      "id": "components/ui/pagination.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/popover.tsx": {
+      "id": "components/ui/popover.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/progress.tsx": {
+      "id": "components/ui/progress.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/radio-group.tsx": {
+      "id": "components/ui/radio-group.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/resizable.tsx": {
+      "id": "components/ui/resizable.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/scroll-area.tsx": {
+      "id": "components/ui/scroll-area.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/select.tsx": {
+      "id": "components/ui/select.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/separator.tsx": {
+      "id": "components/ui/separator.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/sheet.tsx": {
+      "id": "components/ui/sheet.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/sidebar.tsx": {
+      "id": "components/ui/sidebar.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/skeleton.tsx": {
+      "id": "components/ui/skeleton.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/slider.tsx": {
+      "id": "components/ui/slider.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/sonner.tsx": {
+      "id": "components/ui/sonner.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/switch.tsx": {
+      "id": "components/ui/switch.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/table.tsx": {
+      "id": "components/ui/table.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/tabs.tsx": {
+      "id": "components/ui/tabs.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/textarea.tsx": {
+      "id": "components/ui/textarea.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/toast.tsx": {
+      "id": "components/ui/toast.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/toaster.tsx": {
+      "id": "components/ui/toaster.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/toggle-group.tsx": {
+      "id": "components/ui/toggle-group.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/toggle.tsx": {
+      "id": "components/ui/toggle.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/tooltip.tsx": {
+      "id": "components/ui/tooltip.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/ui/use-toast.ts": {
+      "id": "components/ui/use-toast.ts",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "hooks/use-mobile.tsx": {
+      "id": "hooks/use-mobile.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "hooks/use-toast.ts": {
+      "id": "hooks/use-toast.ts",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "hooks/useAuth.tsx": {
+      "id": "hooks/useAuth.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "index.css": {
+      "id": "index.css",
+      "fanIn": 1,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "integrations/supabase/client.ts": {
+      "id": "integrations/supabase/client.ts",
+      "fanIn": 0,
+      "fanOut": 1,
+      "instability": 1,
+      "isHub": false
+    },
+    "integrations/supabase/types.ts": {
+      "id": "integrations/supabase/types.ts",
+      "fanIn": 1,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "lib/governance.ts": {
+      "id": "lib/governance.ts",
+      "fanIn": 0,
+      "fanOut": 1,
+      "instability": 1,
+      "isHub": false
+    },
+    "lib/utils.ts": {
+      "id": "lib/utils.ts",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "main.tsx": {
+      "id": "main.tsx",
+      "fanIn": 0,
+      "fanOut": 2,
+      "instability": 1,
+      "isHub": false
+    },
+    "pages/AdminPage.tsx": {
+      "id": "pages/AdminPage.tsx",
+      "fanIn": 1,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "pages/AuthPage.tsx": {
+      "id": "pages/AuthPage.tsx",
+      "fanIn": 1,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "pages/ConstitutionPage.tsx": {
+      "id": "pages/ConstitutionPage.tsx",
+      "fanIn": 1,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "pages/DecisionsPage.tsx": {
+      "id": "pages/DecisionsPage.tsx",
+      "fanIn": 1,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "pages/Governance.tsx": {
+      "id": "pages/Governance.tsx",
+      "fanIn": 1,
+      "fanOut": 2,
+      "instability": 0.6666666666666666,
+      "isHub": false
+    },
+    "pages/Index.tsx": {
+      "id": "pages/Index.tsx",
+      "fanIn": 1,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "pages/MissionControl.tsx": {
+      "id": "pages/MissionControl.tsx",
+      "fanIn": 1,
+      "fanOut": 5,
+      "instability": 0.8333333333333334,
+      "isHub": false
+    },
+    "pages/NotFound.tsx": {
+      "id": "pages/NotFound.tsx",
+      "fanIn": 1,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "pages/PipelinePage.tsx": {
+      "id": "pages/PipelinePage.tsx",
+      "fanIn": 1,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "pages/ProjectsPage.tsx": {
+      "id": "pages/ProjectsPage.tsx",
+      "fanIn": 1,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "sabotage/cycle_a.ts": {
+      "id": "sabotage/cycle_a.ts",
+      "fanIn": 1,
+      "fanOut": 1,
+      "instability": 0.5,
+      "isHub": false
+    },
+    "sabotage/cycle_b.ts": {
+      "id": "sabotage/cycle_b.ts",
+      "fanIn": 1,
+      "fanOut": 1,
+      "instability": 0.5,
+      "isHub": false
+    },
+    "test/setup.ts": {
+      "id": "test/setup.ts",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "types/database.ts": {
+      "id": "types/database.ts",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "types/governance.ts": {
+      "id": "types/governance.ts",
+      "fanIn": 2,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "types/sdd.ts": {
+      "id": "types/sdd.ts",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "vite-env.d.ts": {
+      "id": "vite-env.d.ts",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    }
+  }
+}
