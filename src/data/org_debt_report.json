@@ -1,0 +1,516 @@
+{
+  "generated_at": "2026-02-08T06:50:28.251Z",
+  "files": [
+    {
+      "path": "package-lock.json",
+      "authors": [
+        "Manuel Ramirez",
+        "gpt-engineer-app[bot]",
+        "Lovable"
+      ],
+      "commit_count": 11,
+      "social_complexity": 4.1,
+      "friction_score": 0.18,
+      "risk_level": "MEDIUM"
+    },
+    {
+      "path": "package.json",
+      "authors": [
+        "Manuel Ramirez",
+        "gpt-engineer-app[bot]",
+        "Lovable"
+      ],
+      "commit_count": 9,
+      "social_complexity": 3.9,
+      "friction_score": 0.22,
+      "risk_level": "MEDIUM"
+    },
+    {
+      "path": "src/App.tsx",
+      "authors": [
+        "Manuel Ramirez",
+        "gpt-engineer-app[bot]",
+        "Lovable"
+      ],
+      "commit_count": 5,
+      "social_complexity": 3.5,
+      "friction_score": 0.4,
+      "risk_level": "MEDIUM"
+    },
+    {
+      "path": "src/components/AppNavbar.tsx",
+      "authors": [
+        "Manuel Ramirez",
+        "gpt-engineer-app[bot]"
+      ],
+      "commit_count": 4,
+      "social_complexity": 2.4,
+      "friction_score": 0.25,
+      "risk_level": "MEDIUM"
+    },
+    {
+      "path": "README.md",
+      "authors": [
+        "Manuel Ramirez",
+        "Lovable"
+      ],
+      "commit_count": 3,
+      "social_complexity": 2.3,
+      "friction_score": 0,
+      "risk_level": "MEDIUM"
+    },
+    {
+      "path": "src/index.css",
+      "authors": [
+        "gpt-engineer-app[bot]",
+        "Lovable"
+      ],
+      "commit_count": 2,
+      "social_complexity": 2.2,
+      "friction_score": 0.5,
+      "risk_level": "MEDIUM"
+    },
+    {
+      "path": "src/pages/Index.tsx",
+      "authors": [
+        "gpt-engineer-app[bot]",
+        "Lovable"
+      ],
+      "commit_count": 2,
+      "social_complexity": 2.2,
+      "friction_score": 0.5,
+      "risk_level": "MEDIUM"
+    },
+    {
+      "path": "tailwind.config.ts",
+      "authors": [
+        "gpt-engineer-app[bot]",
+        "Lovable"
+      ],
+      "commit_count": 2,
+      "social_complexity": 2.2,
+      "friction_score": 0.5,
+      "risk_level": "MEDIUM"
+    },
+    {
+      "path": "docs/architecture/roadmap.md",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 4,
+      "social_complexity": 1.4,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "src/pages/MissionControl.tsx",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 3,
+      "social_complexity": 1.3,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": ".ai/atdi_security_report.json",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 3,
+      "social_complexity": 1.3,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "src/components/governance/RaciCard.tsx",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 3,
+      "social_complexity": 1.3,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "constitution.md",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 3,
+      "social_complexity": 1.3,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "src/integrations/supabase/types.ts",
+      "authors": [
+        "gpt-engineer-app[bot]"
+      ],
+      "commit_count": 3,
+      "social_complexity": 1.3,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "supabase/config.toml",
+      "authors": [
+        "gpt-engineer-app[bot]"
+      ],
+      "commit_count": 3,
+      "social_complexity": 1.3,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "src/secrets.ts",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 2,
+      "social_complexity": 1.2,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "docs/architecture/plan_mission_control.md",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 2,
+      "social_complexity": 1.2,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "src/sabotage/bad_module_a.ts",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 2,
+      "social_complexity": 1.2,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "src/sabotage/bad_module_b.ts",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 2,
+      "social_complexity": 1.2,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "src/pages/Governance.tsx",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 2,
+      "social_complexity": 1.2,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "supabase/migrations/20260208044500_create_raci_governance.sql",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 2,
+      "social_complexity": 1.2,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "src/components/HeroSection.tsx",
+      "authors": [
+        "gpt-engineer-app[bot]"
+      ],
+      "commit_count": 2,
+      "social_complexity": 1.2,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "scripts/generate_valid_ledger.ts",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 1,
+      "social_complexity": 1.1,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "src/data/audit_log.json",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 1,
+      "social_complexity": 1.1,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "scripts/publish_audit_log.ts",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 1,
+      "social_complexity": 1.1,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "src/components/governance/AgentReasoningTimeline.tsx",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 1,
+      "social_complexity": 1.1,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "src/components/governance/AuditLogViewer.tsx",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 1,
+      "social_complexity": 1.1,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "docs/governance/forensic_logging_spec.md",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 1,
+      "social_complexity": 1.1,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "scripts/lib/flight_recorder.ts",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 1,
+      "social_complexity": 1.1,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "docs/security/security_operations_guide.md",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 1,
+      "social_complexity": 1.1,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "scripts/analyze_security.ts",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 1,
+      "social_complexity": 1.1,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "docs/security/threat_model.md",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 1,
+      "social_complexity": 1.1,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "docs/governance/plan_validation_checklist.md",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 1,
+      "social_complexity": 1.1,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "scripts/audit_plan.ts",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 1,
+      "social_complexity": 1.1,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "docs/adr/002-extended-smell-detection.md",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 1,
+      "social_complexity": 1.1,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "docs/architecture/atdi_thresholds.md",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 1,
+      "social_complexity": 1.1,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "docs/tutorials/implementing_quality_sensors.md",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 1,
+      "social_complexity": 1.1,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "scripts/analyze_complexity.ts",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 1,
+      "social_complexity": 1.1,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "src/components/BadComponent.tsx",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 1,
+      "social_complexity": 1.1,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "docs/architecture/blueprint_v2.md",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 1,
+      "social_complexity": 1.1,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "docs/marketing/launch_press_kit.md",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 1,
+      "social_complexity": 1.1,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": ".ai/knowledge_base/adr_summary.json",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 1,
+      "social_complexity": 1.1,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "docs/adr/001-adoption-of-sdd-and-constitution.md",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 1,
+      "social_complexity": 1.1,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "docs/adr/template.md",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 1,
+      "social_complexity": 1.1,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "docs/architecture/spec_mission_control.md",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 1,
+      "social_complexity": 1.1,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "scripts/index_adrs.ts",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 1,
+      "social_complexity": 1.1,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "src/components/mission_control/ConeWidget.tsx",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 1,
+      "social_complexity": 1.1,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "src/components/mission_control/HealthMonitor.tsx",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 1,
+      "social_complexity": 1.1,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "src/components/mission_control/TimelineFeed.tsx",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 1,
+      "social_complexity": 1.1,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "path": "PROJECT_POSTMORTEM.md",
+      "authors": [
+        "Manuel Ramirez"
+      ],
+      "commit_count": 1,
+      "social_complexity": 1.1,
+      "friction_score": 0,
+      "risk_level": "LOW"
+    }
+  ]
+}
