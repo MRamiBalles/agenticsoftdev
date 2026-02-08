@@ -122,6 +122,25 @@ Where code dependencies cross "Author Boundaries" (Conway's Law risk).
 
     fs.writeFileSync(OUTPUT_PATH, report);
     console.log(`✅ [Conway Radar] Report generated: ${OUTPUT_PATH}`);
+
+    // EXPORT JSON FOR DASHBOARD (PHASE 19)
+    const jsonPath = path.join(process.cwd(), 'src', 'data', 'org_debt_report.json');
+    const jsonData = {
+        generated_at: new Date().toISOString(),
+        files: Object.values(ownership).map(o => ({
+            path: o.file,
+            authors: Object.keys(o.authors),
+            commit_count: Object.values(o.authors).reduce((a, b) => a + b, 0),
+            social_complexity: Object.keys(o.authors).length, // Rough proxy
+            friction_score: o.team_friction,
+            risk_level: o.team_friction > 0.6 ? 'HIGH' : o.team_friction > 0.3 ? 'MEDIUM' : 'LOW'
+        })),
+        cross_team_dependencies: frictionHotspots
+    };
+
+    fs.writeFileSync(jsonPath, JSON.stringify(jsonData, null, 2));
+    console.log(`📊 [Conway Radar] Live Data exported: ${jsonPath}`);
+
     console.log(`   - Contributors Analyzed: ${files.length} files`);
     console.log(`   - Cross-Boundary Dependencies: ${frictionHotspots.length}`);
 }

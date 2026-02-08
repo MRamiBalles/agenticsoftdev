@@ -21,7 +21,8 @@ export const OrgDebtHeatmap: React.FC = () => {
     const [hotspots, setHotspots] = useState<OrgDebtFile[]>([]);
 
     useEffect(() => {
-        // Load data if available
+        // Load data directly from the generated JSON
+        // In a real app, this would be an API call, but importing JSON works for static builds
         if ((ORG_DATA as any).files) {
             setHotspots((ORG_DATA as any).files);
         }
