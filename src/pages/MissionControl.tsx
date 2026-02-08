@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { HealthMonitor } from '../components/mission_control/HealthMonitor';
 import { TimelineFeed } from '../components/mission_control/TimelineFeed';
@@ -58,14 +57,8 @@ export default function MissionControl() {
 
     }, []);
 
-    import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-    import { AgentReasoningTimeline } from "@/components/governance/AgentReasoningTimeline";
-
-    // ... inside component ...
-
     return (
         <div className="container mx-auto py-6 space-y-8 bg-slate-50 min-h-screen">
-
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
