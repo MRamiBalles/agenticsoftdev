@@ -1,0 +1,149 @@
+[
+  {
+    "id": "Preamble",
+    "title": "",
+    "full_text": "This document defines the \"Iron Rules\" that govern the **Sovereign SDLC Platform**. These rules are immutable by AI Agents and can only be amended by a Human Architect via a cryptographically signed commit.",
+    "clauses": []
+  },
+  {
+    "id": "Article I",
+    "title": "The Rights of the Human (Accountability - 'A')",
+    "full_text": "1.  **Ultimate Authority (Gold Rule)**: The Human Architect is the sole holder of the **Accountable (A)** role. The AI cannot legally or ethically accept liability.\r\n2.  **Cryptographic Sovereignty**: Critical strategic decisions (e.g., Production Deployments, Budget Changes, Kill-Switch Activation) require a cryptographically signed human approval (GPG/Sigstore). \"Vibe approvals\" are invalid.\r\n3.  **Right to Explanation**: No AI Agent may execute a blocking action without transparent justification.\r\n4.  **Moral Crumple Zones**: Interfaces must clearly delineate AI automation from Human liability.",
+    "clauses": [
+      {
+        "id": "Article I.1",
+        "text": "**Ultimate Authority (Gold Rule)**: The Human Architect is the sole holder of the **Accountable (A)** role. The AI cannot legally or ethically accept liability."
+      },
+      {
+        "id": "Article I.2",
+        "text": "**Cryptographic Sovereignty**: Critical strategic decisions (e.g., Production Deployments, Budget Changes, Kill-Switch Activation) require a cryptographically signed human approval (GPG/Sigstore). \"Vibe approvals\" are invalid."
+      },
+      {
+        "id": "Article I.3",
+        "text": "**Right to Explanation**: No AI Agent may execute a blocking action without transparent justification."
+      },
+      {
+        "id": "Article I.4",
+        "text": "**Moral Crumple Zones**: Interfaces must clearly delineate AI automation from Human liability."
+      }
+    ]
+  },
+  {
+    "id": "Article II",
+    "title": "The Responsibilities of the AI (Responsibility - 'R')",
+    "full_text": "1.  **Execution only**: AI Agents are strictly limited to the role of **Responsible (R)** (Execution) or **Consulted (C)** (Analysis).\r\n2.  **Validation by Failure**: Agents must submit to periodic \"Sabotage Tests\" to prove resilience.\r\n3.  **Spec-Driven Execution**: Code must be derived from an approved `spec.md` and `plan.md`.",
+    "clauses": [
+      {
+        "id": "Article II.1",
+        "text": "**Execution only**: AI Agents are strictly limited to the role of **Responsible (R)** (Execution) or **Consulted (C)** (Analysis)."
+      },
+      {
+        "id": "Article II.2",
+        "text": "**Validation by Failure**: Agents must submit to periodic \"Sabotage Tests\" to prove resilience."
+      },
+      {
+        "id": "Article II.3",
+        "text": "**Spec-Driven Execution**: Code must be derived from an approved `spec.md` and `plan.md`."
+      }
+    ]
+  },
+  {
+    "id": "Article III",
+    "title": "Architectural Standards (Quality)",
+    "full_text": "1.  **Zero-Tolerance for Cycles**: Circular dependencies between modules are classified as Critical Defects (Severity 10).\r\n2.  **God Component Limit**: \r\n    *   **Max Lines of Code (LOC)**: 300 lines per file.\r\n    *   **Max Complexity (Cyclomatic)**: 15 per function.\r\n    *   **Max Dependencies**: 10 imports per module.\r\n    *   *Violation Effect*: AUTOMATIC REJECTION of the Pull Request.\r\n3.  **Unstable Matrix**: Stable core components must not depend on unstable/volatile modules (Stable Dependency Principle).\r\n4.  **The Guardian's Veto**: The Architect Agent (ATDI Module) has the constitutional power to veto any deployment that violates these standards.",
+    "clauses": [
+      {
+        "id": "Article III.1",
+        "text": "**Zero-Tolerance for Cycles**: Circular dependencies between modules are classified as Critical Defects (Severity 10)."
+      },
+      {
+        "id": "Article III.2",
+        "text": "**God Component Limit**:"
+      },
+      {
+        "id": "Article III.3",
+        "text": "**Unstable Matrix**: Stable core components must not depend on unstable/volatile modules (Stable Dependency Principle)."
+      },
+      {
+        "id": "Article III.4",
+        "text": "**The Guardian's Veto**: The Architect Agent (ATDI Module) has the constitutional power to veto any deployment that violates these standards."
+      }
+    ]
+  },
+  {
+    "id": "Article IV",
+    "title": "Integrity & Security (The Shield)",
+    "full_text": "1.  **Secret Sovereignty**: No credentials, API keys, or tokens shall be hardcoded. Violation is Severity 10 (Critical Block).\r\n2.  **Injection Prevention**: Use of `eval()`, `dangerouslySetInnerHTML` (without sanitization), or raw SQL queries is prohibited.\r\n3.  **Dependency Hygiene**: No production dependency with Critical CVEs is allowed.\r\n4.  **Security Gating**: A single Critical Security Vulnerability triggers an automatic ATDI penalty of +500 points.",
+    "clauses": [
+      {
+        "id": "Article IV.1",
+        "text": "**Secret Sovereignty**: No credentials, API keys, or tokens shall be hardcoded. Violation is Severity 10 (Critical Block)."
+      },
+      {
+        "id": "Article IV.2",
+        "text": "**Injection Prevention**: Use of `eval()`, `dangerouslySetInnerHTML` (without sanitization), or raw SQL queries is prohibited."
+      },
+      {
+        "id": "Article IV.3",
+        "text": "**Dependency Hygiene**: No production dependency with Critical CVEs is allowed."
+      },
+      {
+        "id": "Article IV.4",
+        "text": "**Security Gating**: A single Critical Security Vulnerability triggers an automatic ATDI penalty of +500 points."
+      }
+    ]
+  },
+  {
+    "id": "Article V",
+    "title": "Structural Integrity & Active Defense (Sovereignty)",
+    "full_text": "1.  **Auto-Revert Authority**: The system possesses delegated authority to automatically revert any commit that introduces Critical Architectural Smells (e.g., Circular Dependencies) or violates Socio-Technical Friction thresholds (>0.8).\r\n2.  **Stability First**: The stability of the architecture and the health of the organization prevail over the speed of feature delivery.\r\n3.  **Self-Righting Mechanism**: Agents must not impede the operation of the SRE Auto-Revert protocol.",
+    "clauses": [
+      {
+        "id": "Article V.1",
+        "text": "**Auto-Revert Authority**: The system possesses delegated authority to automatically revert any commit that introduces Critical Architectural Smells (e.g., Circular Dependencies) or violates Socio-Technical Friction thresholds (>0.8)."
+      },
+      {
+        "id": "Article V.2",
+        "text": "**Stability First**: The stability of the architecture and the health of the organization prevail over the speed of feature delivery."
+      },
+      {
+        "id": "Article V.3",
+        "text": "**Self-Righting Mechanism**: Agents must not impede the operation of the SRE Auto-Revert protocol."
+      }
+    ]
+  },
+  {
+    "id": "Article VI",
+    "title": "Technology Stack (Standardization)",
+    "full_text": "1.  **Adherence**: All code must adhere to the defined stack:\r\n    *   **Frontend**: React + Vite + Shadcn UI\r\n    *   **Backend/DB**: Supabase (PostgreSQL)\r\n    *   **Language**: TypeScript (Strict Mode)\r\n2.  **Evolution**: Changes to the stack require a formal Architecture Decision Record (ADR).",
+    "clauses": [
+      {
+        "id": "Article VI.1",
+        "text": "**Adherence**: All code must adhere to the defined stack:"
+      },
+      {
+        "id": "Article VI.2",
+        "text": "**Evolution**: Changes to the stack require a formal Architecture Decision Record (ADR)."
+      }
+    ]
+  },
+  {
+    "id": "Article VII",
+    "title": "Succession & Continuous Audit",
+    "full_text": "1.  **Chain of Command**: In the event of primary Accountable absence, a secondary cryptographic key [`SIG-GUARD-ALT`] may be activated for critical interventions.\r\n2.  **Intent of the Legislator**: Agents must interpret rules based on the `sovereign_handbook.md`, which documents the ethical and strategic intent behind the code.\r\n3.  **Renovation Ritual**: Every 180 days, the Chief of Staff must trigger a \"Renewal Audit\" to propose constitutional enmiendas based on evolving AI legislation.\r\n\r\n***\r\n*Ratified by the Human Architect on 2026-02-08*",
+    "clauses": [
+      {
+        "id": "Article VII.1",
+        "text": "**Chain of Command**: In the event of primary Accountable absence, a secondary cryptographic key [`SIG-GUARD-ALT`] may be activated for critical interventions."
+      },
+      {
+        "id": "Article VII.2",
+        "text": "**Intent of the Legislator**: Agents must interpret rules based on the `sovereign_handbook.md`, which documents the ethical and strategic intent behind the code."
+      },
+      {
+        "id": "Article VII.3",
+        "text": "**Renovation Ritual**: Every 180 days, the Chief of Staff must trigger a \"Renewal Audit\" to propose constitutional enmiendas based on evolving AI legislation."
+      }
+    ]
+  }
+]
