@@ -76,54 +76,23 @@ export default function MissionControl() {
             </div>
 
             <Tabs defaultValue="overview" className="space-y-6">
+                import {OrgDebtHeatmap} from "@/components/governance/OrgDebtHeatmap";
+
+                // ... inside Mission Control ...
+
                 <TabsList>
                     <TabsTrigger value="overview" className="flex items-center gap-2"><LayoutDashboard size={16} /> Mission Overview</TabsTrigger>
-                    <TabsTrigger value="audit" className="flex items-center gap-2"><Brain size={16} /> Forensic Audit (Black Box)</TabsTrigger>
+                    <TabsTrigger value="org" className="flex items-center gap-2"><Users size={16} /> Team & Friction</TabsTrigger>
+                    <TabsTrigger value="audit" className="flex items-center gap-2"><Brain size={16} /> Forensic Audit</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="overview" className="space-y-6">
-                    {/* Main Grid: Overview */}
-                    <div className="grid grid-cols-12 gap-6">
-                        {/* Left Column: Metrics & Memory (8 cols) */}
-                        <div className="col-span-12 lg:col-span-8 space-y-6">
-                            {/* Top Row: Cone & Health */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div className="col-span-1">
-                                    <ConeWidget phase={currentPhase} uncertaintyFactor={currentPhase === 'Specify' ? 4.0 : 1.0} />
-                                </div>
-                                <div className="col-span-2">
-                                    <HealthMonitor atdiScore={atdiHistory[atdiHistory.length - 1]?.score || 0} history={atdiHistory} />
-                                </div>
-                            </div>
+                    {/* ... existing overview ... */}
+                </TabsContent>
 
-                            {/* Governance Panel (Moral Crumple Zone) */}
-                            <div className="bg-white p-6 rounded-lg border shadow-sm">
-                                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                                    <Shield size={20} className="text-blue-600" />
-                                    Active Governance (Pending Signatures)
-                                </h3>
-                                <div className="flex flex-wrap gap-6">
-                                    {pendingTasks.map(task => (
-                                        <RaciCard
-                                            key={task.id}
-                                            taskId={task.id}
-                                            taskTitle={task.task_id}
-                                            responsibleAgent={task.responsible_agent_id}
-                                            accountableHumanId={task.accountable_user_id}
-                                            accountableHumanName="Manu (Admin)"
-                                            currentUserId="user-123"
-                                            atdiScore={task.atdiScore}
-                                            riskFactors={task.riskFactors}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Right Column: Timeline (4 cols) */}
-                        <div className="col-span-12 lg:col-span-4">
-                            <TimelineFeed events={timelineEvents} />
-                        </div>
+                <TabsContent value="org">
+                    <div className="h-[600px]">
+                        <OrgDebtHeatmap />
                     </div>
                 </TabsContent>
 
