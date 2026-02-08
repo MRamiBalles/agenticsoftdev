@@ -81,6 +81,10 @@ async function analyzeOrgDebt() {
             } else {
                 // File line
                 const filePath = line.trim();
+
+                // Ignore lockfiles and other mechanical artifacts
+                if (filePath.includes('package-lock.json') || filePath.includes('yarn.lock')) continue;
+
                 if (!fileMap.has(filePath)) {
                     fileMap.set(filePath, {
                         path: filePath,
