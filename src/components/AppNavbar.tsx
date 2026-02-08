@@ -16,6 +16,7 @@ const AppNavbar = () => {
     { path: "/constitution", label: "Constitución", icon: BookOpen },
     ...(user ? [{ path: "/projects", label: "Pipeline", icon: Workflow }] : []),
     ...(user ? [{ path: "/decisions", label: "ADR", icon: FileText }] : []),
+    ...(user ? [{ path: "/governance", label: "Governance", icon: Shield }] : []),
     ...(isAdmin ? [{ path: "/admin", label: "Admin", icon: LayoutDashboard }] : []),
   ];
 
@@ -36,11 +37,10 @@ const AppNavbar = () => {
             <Link
               key={path}
               to={path}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                isActive(path)
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${isActive(path)
                   ? "bg-primary/10 text-primary border border-primary/20"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted"
-              }`}
+                }`}
             >
               <Icon className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">{label}</span>
