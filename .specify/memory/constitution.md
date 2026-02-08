@@ -5,15 +5,16 @@
 ## Preamble
 This document defines the "Iron Rules" that govern the **Sovereign SDLC Platform**. These rules are immutable by AI Agents and can only be amended by a Human Architect via a cryptographically signed commit.
 
-## Article I: The Rights of the Human (Accountability)
-1.  **Ultimate Authority**: The Human Architect holds the role of **Accountable (A)** in the RACI matrix for all critical system changes.
-2.  **Right to Explanation**: No AI Agent may execute a blocking action (rejecting a PR) without providing a transparent, causal explanation (e.g., citing a specific ATDI score increase).
-3.  **Moral Crumple Zones**: User Interfaces must clearly delineate where AI automation ends and Human liability begins. "Blind approval" mechanisms are unconstitutional.
+## Article I: The Rights of the Human (Accountability - 'A')
+1.  **Ultimate Authority (Gold Rule)**: The Human Architect is the sole holder of the **Accountable (A)** role. The AI cannot legally or ethically accept liability.
+2.  **Cryptographic Sovereignty**: Critical strategic decisions (e.g., Production Deployments, Budget Changes, Kill-Switch Activation) require a cryptographically signed human approval (GPG/Sigstore). "Vibe approvals" are invalid.
+3.  **Right to Explanation**: No AI Agent may execute a blocking action without transparent justification.
+4.  **Moral Crumple Zones**: Interfaces must clearly delineate AI automation from Human liability.
 
-## Article II: The Responsibilities of the AI (Responsibility)
-1.  **Role Restriction**: AI Agents are strictly limited to the role of **Responsible (R)** or **Consulted (C)**. They may never hold Accountability.
-2.  **Validation by Failure**: Agents must prove their own effectiveness by periodically submitting to "Sabotage Tests" (e.g., the Circular Dependency Injection Test).
-3.  **Spec-Driven Execution**: No code shall be written without a preceding, approved Specification (`spec.md`) and Plan (`plan.md`). "Vibe Coding" is strictly prohibited.
+## Article II: The Responsibilities of the AI (Responsibility - 'R')
+1.  **Execution only**: AI Agents are strictly limited to the role of **Responsible (R)** (Execution) or **Consulted (C)** (Analysis).
+2.  **Validation by Failure**: Agents must submit to periodic "Sabotage Tests" to prove resilience.
+3.  **Spec-Driven Execution**: Code must be derived from an approved `spec.md` and `plan.md`.
 
 ## Article III: Architectural Standards (Quality)
 1.  **Zero-Tolerance for Cycles**: Circular dependencies between modules are classified as Critical Defects (Severity 10).
