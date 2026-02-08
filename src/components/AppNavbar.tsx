@@ -1,16 +1,20 @@
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { Shield, BookOpen, FileText, LogOut, LogIn, LayoutDashboard } from "lucide-react";
+import { Shield, BookOpen, FileText, LogOut, LogIn, LayoutDashboard, Workflow } from "lucide-react";
 
 const AppNavbar = () => {
   const { user, isAdmin, signOut } = useAuth();
   const location = useLocation();
 
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path: string) => {
+    if (path === "/") return location.pathname === "/";
+    return location.pathname === path || location.pathname.startsWith(path + "/");
+  };
 
   const navLinks = [
-    { path: "/", label: "Inicio", icon: Shield },
+    { path: "/", label: "Inicio", icon: Shield, exact: true },
     { path: "/constitution", label: "Constitución", icon: BookOpen },
+    ...(user ? [{ path: "/projects", label: "Pipeline", icon: Workflow }] : []),
     ...(user ? [{ path: "/decisions", label: "ADR", icon: FileText }] : []),
     ...(isAdmin ? [{ path: "/admin", label: "Admin", icon: LayoutDashboard }] : []),
   ];
