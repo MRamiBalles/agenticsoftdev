@@ -126,3 +126,8 @@ Building the "Project Brain" to enable self-healing and learning.
 - **Value Stream Alignment:** Agent that links technical tasks (commits) to business KPIs (ROI, Retention), preventing "Innovation Theater".
 - **Cognitive Dashboard:** "Explainability Interface" that aggregates agent negotiations to reduce human cognitive load.
 
+### Phase 11 Safeguards (The "Wise" System)
+1.  **Sovereignty Directive (RACI Gold Rule):** Agents are **Responsible**, Humans are **Accountable**. Critical strategic decisions (Budget, Kill-Switch) require cryptographic Human Signature.
+2.  **Atrophy Protocol (The Terminator):** The "Value Aligner" must proactively propose the **depreciation** of low-value features/code ("The Kill Switch") to combat Digital Atrophy.
+3.  **Strategic XAI:** Every high-level decision must be accompanied by a natural language justification derived from data (e.g., SHAP for Business), preventing "Black Box" management.
+
