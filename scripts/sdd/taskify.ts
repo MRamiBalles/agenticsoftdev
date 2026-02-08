@@ -8,7 +8,7 @@ async function taskify() {
     const featureId = featureName.toLowerCase().replace(/\s+/g, '_');
 
     const planPath = path.join(process.cwd(), 'docs', 'plans', `${featureId}.md`);
-    const taskMdPath = path.join(process.cwd(), '.gemini', 'antigravity', 'brain', '229b14ba-d9a8-49bc-b3c0-dfd58ac6d52c', 'task.md');
+    const taskMdPath = 'C:/Users/Manu/.gemini/antigravity/brain/229b14ba-d9a8-49bc-b3c0-dfd58ac6d52c/task.md';
 
     if (!fs.existsSync(planPath)) {
         console.error(`❌ Error: Plan NOT FOUND at ${planPath}`);

@@ -1,3 +1,5 @@
+import * as React from 'react';
+import { useState, useEffect } from 'react';
 import { HealthMonitor } from '../components/mission_control/HealthMonitor';
 import { TimelineFeed } from '../components/mission_control/TimelineFeed';
 import { ConeWidget } from '../components/mission_control/ConeWidget';
@@ -78,18 +80,6 @@ export default function MissionControl() {
             </div>
 
             <Tabs defaultValue="overview" className="space-y-6">
-                import {OrgDebtHeatmap} from "@/components/governance/OrgDebtHeatmap";
-
-                // ... inside Mission Control ...
-
-                import {ArchitectureRadar} from "@/components/governance/ArchitectureRadar";
-                // ... existing imports
-
-                // ... inside the component
-                import {OperationsLog} from "@/components/ops/OperationsLog";
-                // ... existing imports
-
-                // ... inside Mission Control
                 <TabsList>
                     <TabsTrigger value="overview" className="flex items-center gap-2"><LayoutDashboard size={16} /> Mission Overview</TabsTrigger>
                     <TabsTrigger value="org" className="flex items-center gap-2"><Users size={16} /> Team & Friction</TabsTrigger>
@@ -98,10 +88,33 @@ export default function MissionControl() {
                     <TabsTrigger value="audit" className="flex items-center gap-2"><Brain size={16} /> Forensic Audit</TabsTrigger>
                 </TabsList>
 
-                {/* ... other tabs ... */}
+                <TabsContent value="overview" className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div className="lg:col-span-3">
+                            <HealthMonitor data={atdiHistory} />
+                        </div>
+                        <div>
+                            <ConeWidget phase={currentPhase} />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div className="lg:col-span-2">
+                            <TimelineFeed events={timelineEvents} />
+                        </div>
+                        <div>
+                            <RaciCard task={pendingTasks[0]} />
+                        </div>
+                    </div>
+                </TabsContent>
+
+                <TabsContent value="org">
+                    <div className="h-[600px] bg-white p-4 rounded-lg border shadow-sm">
+                        <OrgDebtHeatmap />
+                    </div>
+                </TabsContent>
 
                 <TabsContent value="arch">
-                    <div className="h-[600px]">
+                    <div className="h-[600px] bg-white p-4 rounded-lg border shadow-sm">
                         <ArchitectureRadar />
                     </div>
                 </TabsContent>
