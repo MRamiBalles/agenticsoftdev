@@ -91,7 +91,23 @@ Building the "Project Brain" to enable self-healing and learning.
     *   **Phase 8a (TypeScript)**: Calculate exact marginal contribution of files to the ATDI score (Math-based).
     *   **Phase 8b (Future)**: Full SHAP/LIME when ML models are integrated for prediction.
 
-## 7. Phase 9: Fortress Security (The Shield)
+## 8. Phase 9: Organizational Intelligence (v2.1 - The Sovereign Mind)
+*   **Strategic Goal**: Prevent "Organizational Debt" and enforce "Agent Sovereignty".
+*   **Key Pillars**:
+    1.  **Organizational Debt Manager**:
+        *   *Concept*: Inverse Conway's Law.
+        *   *Tool*: **Sociotechnical Agent** analyzing commit/agent coordination costs.
+    2.  **Advanced Agent Governance (Moral Crumple Zones)**:
+        *   *Concept*: ISO 42001 & EU AI Act Compliance.
+        *   *Tool*: **Black Box Recorder** (Forensic "Chain-of-Thought" logs).
+    3.  **Distributed System Smells**:
+        *   *Concept*: Scaling beyond the monolith.
+        *   *Tool*: **Graph Analysis** for Hub-like & Cyclic Dependencies (Arcan logic).
+    4.  **Dynamic Planning (The Living Cone)**:
+        *   *Concept*: Evidence-Based Scheduling.
+        *   *Tool*: **Dynamic Estimator** that recalibrates `plan.md` based on real velocity.
+
+## 9. Phase 10: Fortress Security (The Shield)
 *   **Goal**: Hard-gating deployments on security, not just architecture.
 *   **Tools**:
     *   **SAST Integration**: Snyk/SonarQube blocking pipelines.
