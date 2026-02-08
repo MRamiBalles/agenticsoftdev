@@ -31,7 +31,12 @@ This document defines the "Iron Rules" that govern the **Sovereign SDLC Platform
 3.  **Dependency Hygiene**: No production dependency with Critical CVEs is allowed.
 4.  **Security Gating**: A single Critical Security Vulnerability triggers an automatic ATDI penalty of +500 points.
 
-## Article V: Technology Stack (Sovereignty)
+## Article V: Structural Integrity & Active Defense (Sovereignty)
+1.  **Auto-Revert Authority**: The system possesses delegated authority to automatically revert any commit that introduces Critical Architectural Smells (e.g., Circular Dependencies) or violates Socio-Technical Friction thresholds (>0.8).
+2.  **Stability First**: The stability of the architecture and the health of the organization prevail over the speed of feature delivery.
+3.  **Self-Righting Mechanism**: Agents must not impede the operation of the SRE Auto-Revert protocol.
+
+## Article VI: Technology Stack (Standardization)
 1.  **Adherence**: All code must adhere to the defined stack:
     *   **Frontend**: React + Vite + Shadcn UI
     *   **Backend/DB**: Supabase (PostgreSQL)
