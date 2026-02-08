@@ -1,24 +1,29 @@
-# Welcome to your Lovable project
+# The Sovereign SDLC Platform
 
-## Project info
+**A governance-first development environment for the Agentic Age.**
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+This platform implements **Spec-Driven Development (SDD)** and **ISO/IEC 42001** compliance by design. It ensures that while AI agents act as the **Responsible** workforce, humans remain strictly **Accountable** for all critical decisions.
 
-## How can I edit this code?
+## Core Features
 
-There are several ways of editing your application.
+- **Constitution-as-Code**: Immutable "Iron Rules" enforced at the database level.
+- **RACI Governance Matrix**: Strict separation of AI execution (R) and Human accountability (A).
+- **Moral Crumple Zones**: UI patterns designed to prevent "blind approval" and enforce cognitive engagement.
+- **ATDI Quality Gate**: (Coming Soon) Automated technical debt calculation to block bad architecture before it ships.
 
-**Use Lovable**
+## Project Structure
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+- `docs/architecture/`: The Single Source of Truth (`spec.md`, `plan.md`, `roadmap.md`).
+- `.ai/knowledge_base/`: Academic references for AI Agents (ISO 42001, ATDI, etc.).
+- `src/components/governance/`: The "Gatekeeper" UI components.
+- `supabase/migrations/`: Database schema with governance triggers.
 
-Changes made via Lovable will be committed automatically to this repo.
+## Getting Started
 
-**Use your preferred IDE**
+1. **Install Dependencies**: `npm install`
+2. **Start Dev Server**: `npm run dev`
+3. **Verify Governance**: Navigate to `/governance` to see the RACI Dashboard in action.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
 Follow these steps:
 
