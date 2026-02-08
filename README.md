@@ -1,78 +1,55 @@
-# The Sovereign SDLC Platform
+# 🏛️ Sovereign SDLC Platform (v2.0)
 
-**A governance-first development environment for the Agentic Age.**
+> "Código es fácil. La coherencia es difícil. La soberanía es innegociable."
 
-This platform implements **Spec-Driven Development (SDD)** and **ISO/IEC 42001** compliance by design. It ensures that while AI agents act as the **Responsible** workforce, humans remain strictly **Accountable** for all critical decisions.
+La **Sovereign SDLC Platform** es un entorno de desarrollo agéntico diseñado para eliminar el "Vibe Coding" y restaurar la disciplina de ingeniería mediante **Gobernanza Constitucional**, **Control de Calidad Profunda (ATDI)** y **Seguridad Defensiva (DevSecOps)**.
 
-## Core Features
+## 🌟 Principios Fundamentales (v2.0)
 
-- **Constitution-as-Code**: Immutable "Iron Rules" enforced at the database level.
-- **RACI Governance Matrix**: Strict separation of AI execution (R) and Human accountability (A).
-- **Moral Crumple Zones**: UI patterns designed to prevent "blind approval" and enforce cognitive engagement.
-- **ATDI Quality Gate**: (Coming Soon) Automated technical debt calculation to block bad architecture before it ships.
+### 1. Spec-Driven Development (SDD)
+El código es un derivado; la especificación es la fuente de la verdad.
+- **Flujo:** `/specify` -> `/plan` -> `/tasks` -> `/implement`.
+- **Gobernanza:** Ninguna línea de código se escribe sin un `plan.md` validado por el **Agente Auditor**.
 
-## Project Structure
+### 2. Soberanía Humana (ISO 42001 Compliance)
+La IA propone, el Humano dispone.
+- **Matriz RACI Híbrida:** La IA es *Responsible* (Ejecuta), el Humano es *Accountable* (Responde legalmente).
+- **Zona de Deformación Moral:** Bloqueo de UI que exige justificación humana para acciones de alto riesgo.
 
-- `docs/architecture/`: The Single Source of Truth (`spec.md`, `plan.md`, `roadmap.md`).
-- `.ai/knowledge_base/`: Academic references for AI Agents (ISO 42001, ATDI, etc.).
-- `src/components/governance/`: The "Gatekeeper" UI components.
-- `supabase/migrations/`: Database schema with governance triggers.
+### 3. Tolerancia Cero a la Deuda Técnica (ATDI v2)
+Medimos la calidad en dólares y tiempo, no en opiniones.
+- **Motor ATDI:** Índice de Deuda Técnica Arquitectónica basado en *Sas & Avgeriou*.
+- **Detector de Olores:** Identificación automática de *God Components*, Ciclos y Complejidad Ciclomática (>15).
 
-## Getting Started
+### 4. Escudo de Seguridad (Defense-in-Depth)
+Seguridad por diseño, no por accidente.
+- **SAST:** Escaneo proactivo de secretos y patrones inseguros (`analyze_security.ts`).
+- **SCA:** Bloqueo de dependencias con vulnerabilidades conocidas (CVEs).
 
-1. **Install Dependencies**: `npm install`
-2. **Start Dev Server**: `npm run dev`
-3. **Verify Governance**: Navigate to `/governance` to see the RACI Dashboard in action.
+---
 
+## 🛠️ Arquitectura del Sistema
 
-Follow these steps:
+| Agente / Módulo | Función | Herramientas |
+| :--- | :--- | :--- |
+| **Spec Kit CLI** | Interfaz de intención y planificación | GitHub Spec Kit, Markdown |
+| **Plan Auditor** | Validación semántica de `plan.md` | LLM Validator, Reglas Constitucionales |
+| **Guardian Agent** | Cálculo de ATDI y Complejidad | `madge`, `ts-morph`, `typhonjs` |
+| **Security Officer** | Detección de amenazas y CVEs | `semgrep`, `npm audit`, Regex |
+| **Mission Control** | Dashboard de Observabilidad y Firma | React, Recharts, Logs Criptográficos |
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## 🚀 Inicio Rápido
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+1. **Inicializar Proyecto:**
+   ```bash
+   npm run init:sovereign
+   ```
+2. **Definir Intención:**
+   ```bash
+   /specify "Sistema de pagos con Stripe y conciliación automática"
+   ```
+3. **Auditar Plan:**
+   El sistema bloqueará automáticamente planes con ambigüedades ("TBD") o stacks prohibidos.
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## 📜 Licencia
+Emitido bajo la **Licencia de Soberanía Técnica**. Uso obligatorio de `constitution.md`.
