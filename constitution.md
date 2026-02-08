@@ -25,7 +25,13 @@ This document defines the "Iron Rules" that govern the **Sovereign SDLC Platform
 3.  **Unstable Matrix**: Stable core components must not depend on unstable/volatile modules (Stable Dependency Principle).
 4.  **The Guardian's Veto**: The Architect Agent (ATDI Module) has the constitutional power to veto any deployment that violates these standards.
 
-## Article IV: Technology Stack (Sovereignty)
+## Article IV: Integrity & Security (The Shield)
+1.  **Secret Sovereignty**: No credentials, API keys, or tokens shall be hardcoded. Violation is Severity 10 (Critical Block).
+2.  **Injection Prevention**: Use of `eval()`, `dangerouslySetInnerHTML` (without sanitization), or raw SQL queries is prohibited.
+3.  **Dependency Hygiene**: No production dependency with Critical CVEs is allowed.
+4.  **Security Gating**: A single Critical Security Vulnerability triggers an automatic ATDI penalty of +500 points.
+
+## Article V: Technology Stack (Sovereignty)
 1.  **Adherence**: All code must adhere to the defined stack:
     *   **Frontend**: React + Vite + Shadcn UI
     *   **Backend/DB**: Supabase (PostgreSQL)
