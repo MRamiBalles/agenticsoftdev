@@ -1,58 +1,24 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { AlertTriangle, CheckCircle, ShieldAlert, User, Bot, Activity } from 'lucide-react';
-import { approveTaskDeployment } from '@/lib/governance';
+import { RaciCardProps } from './logic';
 
-interface RaciCardProps {
-    taskId: string;
-    taskTitle: string;
-    responsibleAgent: string;
-    accountableHumanId: string;
-    accountableHumanName: string;
-    currentUserId: string;
-    // New Prop for ATDI
-    atdiScore?: number; // Optional until backend is fully connected
-    riskFactors?: string[];
+interface RaciCardLayoutProps extends RaciCardProps {
+    logic: any; // Return type of useRaciCardLogic
 }
 
-export const RaciCard: React.FC<RaciCardProps> = ({
-    taskId, taskTitle, responsibleAgent, accountableHumanId, accountableHumanName, currentUserId,
-    atdiScore = 0, riskFactors = []
-}) => {
-    const [justification, setJustification] = useState('');
-    const [status, setStatus] = useState<'PENDING' | 'APPROVED' | 'BLOCKED'>('PENDING');
-    const [isSigning, setIsSigning] = useState(false);
+export const RaciCardLayout: React.FC<RaciCardLayoutProps> = ({ logic, ...props }) => {
+    const {
+        justification, setJustification, status, setStatus, isSigning,
+        isAccountable, isHighRisk, isMediumRisk, riskColor, riskLabel, handleApprove
+    } = logic;
 
-    const mockSupabase = { from: () => ({ insert: async () => ({ error: null }) }) };
-    const isAccountable = currentUserId === accountableHumanId;
-
-    // ATDI Logic
-    const isHighRisk = atdiScore >= 15;
-    const isMediumRisk = atdiScore >= 5 && atdiScore < 15;
-
-    let riskColor = "bg-green-100 text-green-800 border-green-200";
-    let riskLabel = "Low Risk";
-
-    if (isHighRisk) {
-        riskColor = "bg-red-100 text-red-800 border-red-200";
-        riskLabel = "CRITICAL RISK";
-    } else if (isMediumRisk) {
-        riskColor = "bg-yellow-100 text-yellow-800 border-yellow-200";
-        riskLabel = "Medium Risk";
-    }
-
-    const handleApprove = async () => {
-        if (!justification) return;
-        setIsSigning(true);
-        // Simulate API call
-        const result = await approveTaskDeployment(mockSupabase, taskId, currentUserId, justification);
-        if (result.success) setStatus('APPROVED');
-        setIsSigning(false);
-    };
+    const {
+        taskTitle, responsibleAgent, accountableHumanName, riskFactors = []
+    } = props;
 
     return (
         <Card className={`w-[450px] shadow-lg border-l-4 ${isHighRisk ? 'border-l-red-500' : 'border-l-yellow-500'}`}>
@@ -61,7 +27,7 @@ export const RaciCard: React.FC<RaciCardProps> = ({
                     <CardTitle className="text-lg">Governance Gatekeeper</CardTitle>
                     <div className={`px-2 py-1 rounded-full text-xs font-bold border ${riskColor} flex items-center gap-1`}>
                         <Activity size={12} />
-                        ATDI: {atdiScore} ({riskLabel})
+                        ATDI: {props.atdiScore} ({riskLabel})
                     </div>
                 </div>
                 <CardDescription>ISO 42001 Accountability Check</CardDescription>
@@ -152,7 +118,7 @@ export const RaciCard: React.FC<RaciCardProps> = ({
                         <Button variant="ghost" onClick={() => setStatus('BLOCKED')}>Reject</Button>
                         <Button
                             className={`${isHighRisk ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'} text-white transition-colors`}
-                            disabled={justification.length < (isHighRisk ? 50 : 10) || isSigning} // Harder to approve high risk
+                            disabled={justification.length < (isHighRisk ? 50 : 10) || isSigning}
                             onClick={handleApprove}
                         >
                             {isSigning ? "Signing..." : isHighRisk ? "Override & Sign (High Risk)" : "Cryptographic Sign & Approve"}
