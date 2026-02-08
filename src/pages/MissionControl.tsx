@@ -84,29 +84,29 @@ export default function MissionControl() {
                 // ... existing imports
 
                 // ... inside the component
+                import {OperationsLog} from "@/components/ops/OperationsLog";
+                // ... existing imports
+
+                // ... inside Mission Control
                 <TabsList>
                     <TabsTrigger value="overview" className="flex items-center gap-2"><LayoutDashboard size={16} /> Mission Overview</TabsTrigger>
                     <TabsTrigger value="org" className="flex items-center gap-2"><Users size={16} /> Team & Friction</TabsTrigger>
                     <TabsTrigger value="arch" className="flex items-center gap-2"><Network size={16} /> Architecture Radar</TabsTrigger>
+                    <TabsTrigger value="ops" className="flex items-center gap-2 text-blue-700"><ShieldCheck size={16} /> Live Ops</TabsTrigger>
                     <TabsTrigger value="audit" className="flex items-center gap-2"><Brain size={16} /> Forensic Audit</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="overview" className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {/* ... keys ... */}
-                    </div>
-                    {/* ... */}
-                </TabsContent>
-
-                <TabsContent value="org">
-                    <div className="h-[600px]">
-                        <OrgDebtHeatmap />
-                    </div>
-                </TabsContent>
+                {/* ... other tabs ... */}
 
                 <TabsContent value="arch">
                     <div className="h-[600px]">
                         <ArchitectureRadar />
+                    </div>
+                </TabsContent>
+
+                <TabsContent value="ops">
+                    <div className="h-[800px]">
+                        <OperationsLog />
                     </div>
                 </TabsContent>
 
