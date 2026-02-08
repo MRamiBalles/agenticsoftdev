@@ -1,1 +1,4 @@
 project_id = "iywqbzgaoupdnvsteifi"
+
+[functions.validate-constitution]
+verify_jwt = false

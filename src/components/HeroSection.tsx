@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Shield, Cpu } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const HeroSection = () => {
   return (
@@ -68,18 +69,18 @@ const HeroSection = () => {
           transition={{ duration: 0.7, delay: 0.5 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-4"
         >
-          <button className="group relative px-8 py-3.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm tracking-wide transition-all duration-300 hover:scale-105 glow-primary-strong">
-            <span className="flex items-center gap-2">
-              <Cpu className="w-4 h-4" />
-              Explorar Arquitectura
-            </span>
-          </button>
-          <button className="px-8 py-3.5 rounded-lg glass-hover font-semibold text-sm tracking-wide text-foreground">
+          <Link to="/constitution" className="group relative px-8 py-3.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm tracking-wide transition-all duration-300 hover:scale-105 glow-primary-strong">
             <span className="flex items-center gap-2">
               <Shield className="w-4 h-4" />
-              Gobernanza ISO 42001
+              Ver Constitución
             </span>
-          </button>
+          </Link>
+          <Link to="/auth" className="px-8 py-3.5 rounded-lg glass-hover font-semibold text-sm tracking-wide text-foreground">
+            <span className="flex items-center gap-2">
+              <Cpu className="w-4 h-4" />
+              Acceso al Sistema
+            </span>
+          </Link>
         </motion.div>
 
         {/* Metrics strip */}
