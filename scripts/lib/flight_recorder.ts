@@ -19,9 +19,19 @@ interface FlightRecorderEntry {
     outcome: "SUCCESS" | "FAILURE" | "BLOCKED";
 }
 
+
+interface OrgDebtReport {
+    files: Array<{
+        path: string;
+        friction_score: number;
+        risk_level: string;
+    }>;
+}
+
 export class FlightRecorder {
     private agentId: string;
     private sessionId: string;
+    private orgDebtPath = path.join(process.cwd(), 'src', 'data', 'org_debt_report.json');
 
     constructor(agentId: string, sessionId: string) {
         this.agentId = agentId;
@@ -65,10 +75,63 @@ export class FlightRecorder {
         return JSON.parse(redacted);
     }
 
+    /**
+     * Checks if the proposed action violates organizational peace treaties.
+     * @param targetFile The file the agent attempts to modify.
+     * @returns { allowed: boolean; reason?: string }
+     */
+    public checkGovernance(targetFile: string): { allowed: boolean; reason?: string } {
+        try {
+            if (!fs.existsSync(this.orgDebtPath)) {
+                return { allowed: true }; // Fail-open if no intelligence data
+            }
+
+            const report: OrgDebtReport = JSON.parse(fs.readFileSync(this.orgDebtPath, 'utf-8'));
+            // Normalize paths for comparison (simple endsWith check for robustness)
+            const frictionEntry = report.files.find(f => targetFile.replace(/\\/g, '/').endsWith(f.path));
+
+            // CONSTITUTIONAL THRESHOLD: 0.7 (70% contention)
+            if (frictionEntry && frictionEntry.friction_score > 0.7) {
+                return {
+                    allowed: false,
+                    reason: `⛔ GOVERNANCE LOCK: File '${targetFile}' is a Contention Zone (Friction: ${frictionEntry.friction_score}). Manual resolution by Accountable (RACI) required.`
+                };
+            }
+
+            return { allowed: true };
+
+        } catch (error) {
+            console.error("⚠️ Error reading organizational intelligence:", error);
+            return { allowed: true };
+        }
+    }
+
+    public async interceptToolExecution(toolName: string, args: any): Promise<boolean> {
+        // Only block write operations
+        if (toolName === 'write_file' || toolName === 'replace_lines' || toolName === 'replace_file_content') {
+            const targetPath = args.path || args.file || args.TargetFile || args.target_file;
+            if (targetPath) {
+                const governanceCheck = this.checkGovernance(targetPath);
+
+                if (!governanceCheck.allowed) {
+                    this.log(
+                        "GOVERNANCE_INTERVENTION",
+                        `Attempt to modify contested file: ${targetPath}`,
+                        "GOVERNANCE_CHECK",
+                        { outcome: 'BLOCKED', reason: governanceCheck.reason },
+                        "BLOCKED"
+                    );
+                    throw new Error(governanceCheck.reason);
+                }
+            }
+        }
+        return true;
+    }
+
     public log(
         trigger: string,
         reasoning: string,
-        actionType: "FILE_WRITE" | "SHELL_EXEC" | "PLAN_DECISION" | "GOVERNANCE_CHECK",
+        actionType: "FILE_WRITE" | "SHELL_EXEC" | "PLAN_DECISION" | "GOVERNANCE_CHECK" | "GOVERNANCE_INTERVENTION",
         payload: any,
         outcome: "SUCCESS" | "FAILURE" | "BLOCKED" = "SUCCESS"
     ) {
@@ -80,7 +143,7 @@ export class FlightRecorder {
             session_id: this.sessionId,
             trigger_event: trigger,
             chain_of_thought: reasoning,
-            action_type: actionType,
+            action_type: actionType as any,
             action_payload: this.redactSecrets(payload),
             outcome: outcome
         };
@@ -91,6 +154,7 @@ export class FlightRecorder {
         console.log(`📼 [FlightRecorder] Logged action: ${actionType} (${entry.id.substring(0, 8)})`);
     }
 }
+
 
 // Example Usage (for testing)
 // const recorder = new FlightRecorder("ArchitectAgent-01", "session-123");
