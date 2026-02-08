@@ -84,26 +84,28 @@ async function runSREMonitor() {
     if (anomalies.length === 0) {
         console.log("\n✅ [SRE Agent] System Status: HEALTHY. No active incidents.");
     } else {
-        console.log(`\n🚨 [SRE Agent] System Status: DEFCON ${anomalies.some(a => a.severity === 'CRITICAL') ? '1' : '3'}`);
+        const hasCritical = anomalies.some(a => a.severity === 'CRITICAL');
+        console.log(`\n🚨 [SRE Agent] System Status: DEFCON ${hasCritical ? '1' : '3'}`);
         console.log(`   Detailed Incident Report:`);
 
         anomalies.forEach(anomaly => {
-            const icon = anomaly.severity === 'CRITICAL' ? '🔴' : 'Vk';
+            const icon = anomaly.severity === 'CRITICAL' ? '🔴' : '⚠️';
             console.log(`   ${icon} [${anomaly.type}] ${anomaly.description}`);
-            if (anomalies.some(a => a.severity === 'CRITICAL')) {
-                console.log(`      ⚡ ACTION REQUIRED: Auto-Revert Protocol ACTIVATED.`);
+        });
 
-                try {
-                    execSync('npx ts-node scripts/ops/revert_change.ts', { stdio: 'inherit' });
-                    console.log("\n✅ [SRE Agent] Threat Neutralized. System restored to safe state.");
-                } catch (error) {
-                    console.error("\n❌ [SRE Agent] Auto-Revert Failed. Immediate human intervention required.");
-                    process.exit(1);
-                }
+        if (hasCritical) {
+            console.log(`\n      ⚡ ACTION REQUIRED: Auto-Revert Protocol ACTIVATED.`);
+            try {
+                execSync('npx tsx scripts/ops/revert_change.ts', { stdio: 'inherit' });
+                console.log("\n✅ [SRE Agent] Threat Neutralized. System restored to safe state.");
+            } catch (error) {
+                console.error("\n❌ [SRE Agent] Auto-Revert Failed. Immediate human intervention required.");
+                process.exit(1);
             }
-
-            process.exit(1); // Exit with error to signal CI failure (even if reverted, we want to notify)
         }
+
+        process.exit(1); // Exit with error to signal CI failure
+    }
 }
 
-    runSREMonitor();
+runSREMonitor();
