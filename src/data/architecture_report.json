@@ -1,11 +1,6 @@
 {
-  "generated_at": "2026-02-08T07:14:30.529Z",
-  "circular_dependencies": [
-    [
-      "sabotage/cycle_a.ts",
-      "sabotage/cycle_b.ts"
-    ]
-  ],
+  "generated_at": "2026-02-08T07:17:14.848Z",
+  "circular_dependencies": [],
   "hubs": [],
   "unstable_nodes": [
     {
@@ -72,20 +67,6 @@
       "isHub": false
     },
     {
-      "id": "sabotage/cycle_a.ts",
-      "fanIn": 1,
-      "fanOut": 1,
-      "instability": 0.5,
-      "isHub": false
-    },
-    {
-      "id": "sabotage/cycle_b.ts",
-      "fanIn": 1,
-      "fanOut": 1,
-      "instability": 0.5,
-      "isHub": false
-    },
-    {
       "id": "../.ai/knowledge_base/adr_summary.json",
       "fanIn": 1,
       "fanOut": 0,
@@ -143,6 +124,20 @@
     },
     {
       "id": "components/NavLink.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    {
+      "id": "components/governance/AgentReasoningTimeline.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    {
+      "id": "components/governance/ArchitectureRadar.tsx",
       "fanIn": 0,
       "fanOut": 0,
       "instability": 0,
@@ -230,6 +225,13 @@
     },
     "components/governance/AgentReasoningTimeline.tsx": {
       "id": "components/governance/AgentReasoningTimeline.tsx",
+      "fanIn": 0,
+      "fanOut": 0,
+      "instability": 0,
+      "isHub": false
+    },
+    "components/governance/ArchitectureRadar.tsx": {
+      "id": "components/governance/ArchitectureRadar.tsx",
       "fanIn": 0,
       "fanOut": 0,
       "instability": 0,
@@ -786,20 +788,6 @@
       "fanIn": 1,
       "fanOut": 0,
       "instability": 0,
-      "isHub": false
-    },
-    "sabotage/cycle_a.ts": {
-      "id": "sabotage/cycle_a.ts",
-      "fanIn": 1,
-      "fanOut": 1,
-      "instability": 0.5,
-      "isHub": false
-    },
-    "sabotage/cycle_b.ts": {
-      "id": "sabotage/cycle_b.ts",
-      "fanIn": 1,
-      "fanOut": 1,
-      "instability": 0.5,
       "isHub": false
     },
     "test/setup.ts": {

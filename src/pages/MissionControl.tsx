@@ -80,19 +80,33 @@ export default function MissionControl() {
 
                 // ... inside Mission Control ...
 
+                import {ArchitectureRadar} from "@/components/governance/ArchitectureRadar";
+                // ... existing imports
+
+                // ... inside the component
                 <TabsList>
                     <TabsTrigger value="overview" className="flex items-center gap-2"><LayoutDashboard size={16} /> Mission Overview</TabsTrigger>
                     <TabsTrigger value="org" className="flex items-center gap-2"><Users size={16} /> Team & Friction</TabsTrigger>
+                    <TabsTrigger value="arch" className="flex items-center gap-2"><Network size={16} /> Architecture Radar</TabsTrigger>
                     <TabsTrigger value="audit" className="flex items-center gap-2"><Brain size={16} /> Forensic Audit</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="overview" className="space-y-6">
-                    {/* ... existing overview ... */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {/* ... keys ... */}
+                    </div>
+                    {/* ... */}
                 </TabsContent>
 
                 <TabsContent value="org">
                     <div className="h-[600px]">
                         <OrgDebtHeatmap />
+                    </div>
+                </TabsContent>
+
+                <TabsContent value="arch">
+                    <div className="h-[600px]">
+                        <ArchitectureRadar />
                     </div>
                 </TabsContent>
 
