@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-02-08T09:10:53.992Z",
+  "generated_at": "2026-02-08T09:14:22.816Z",
   "files": [
     {
       "path": "../.ai/knowledge_base/adr_summary.json",
@@ -147,12 +147,13 @@
     {
       "path": "components/governance/OrgDebtHeatmap.tsx",
       "authors": [
+        "Manu",
         "Manuel Ramirez"
       ],
-      "commit_count": 1,
-      "social_complexity": 1,
-      "friction_score": 0,
-      "risk_level": "LOW"
+      "commit_count": 2,
+      "social_complexity": 2,
+      "friction_score": 0.5,
+      "risk_level": "MEDIUM"
     },
     {
       "path": "components/governance/RaciCard/index.tsx",

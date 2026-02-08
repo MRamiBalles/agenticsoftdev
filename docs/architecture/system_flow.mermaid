@@ -1,0 +1,48 @@
+graph TD
+    %% Roles
+    User((👮‍♂️ Comandante\nAccountable))
+    Agent[🤖 Agente Constructor\nResponsible]
+    Gov[⚖️ Agente de Gobernanza]
+    SRE[🛡️ SRE Monitor & ATDI]
+    
+    %% Artefactos
+    Const[📜 Constitution.md]
+    Spec[📄 Spec.md\n(Intención)]
+    Plan[📝 Plan.md\n(Estrategia)]
+    Tasks[✅ Tasks.md\n(Tácticas)]
+    Code[💻 Código Fuente]
+    Dash[👁️ Mission Control]
+
+    %% Flujo SDD (Spec-Driven Development)
+    User -->|/specify| Spec
+    Spec -->|Validar vs| Const
+    Const -.->|Guardarraíles| Gov
+    
+    subgraph "Fase de Planificación (Cerebro)"
+        Spec --> Agent
+        Agent -->|Genera| Plan
+        Gov -->|Audita| Plan
+        Plan -->|Requiere Firma| User
+    end
+
+    User -->|✍️ sign_off.ts| Plan
+    
+    subgraph "Fase de Ejecución (Músculo)"
+        Plan -->|/tasks| Tasks
+        Tasks --> Agent
+        Agent -->|Implementa| Code
+    end
+
+    subgraph "Sistema Nervioso (Vigilancia Continua)"
+        Code --> SRE
+        SRE -->|Calcula ATDI & Ciclos| Code
+        SRE -->|Revertir si Riesgo > Umbral| Code
+        SRE -->|Heartbeat (JSON)| Dash
+    end
+    
+    subgraph "Capa Socio-Técnica"
+        Code -->|Análisis de Fricción| ConwayRadar
+        ConwayRadar -->|Alertas Sociales| Dash
+    end
+
+    Dash -->|Visualización en Tiempo Real| User

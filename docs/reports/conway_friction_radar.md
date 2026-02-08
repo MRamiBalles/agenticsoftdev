@@ -1,5 +1,5 @@
 # 📡 Conway Friction Radar
-**Generated:** 2026-02-08T09:10:53.989Z
+**Generated:** 2026-02-08T09:14:22.813Z
 
 ## 1. High Friction Zones (Cognitive Dissonance)
 Files where multiple authors are competing for dominance (Friction > 0.5).
@@ -8,6 +8,7 @@ Files where multiple authors are competing for dominance (Friction > 0.5).
 |---|---|---|---|
 | `App.tsx` | **Manuel Ramirez** | 🔴 0.6 | Manuel Ramirez, gpt-engineer-app[bot], Lovable |
 | `components/AppNavbar.tsx` | **Manuel Ramirez** | 🔴 0.5 | Manuel Ramirez, gpt-engineer-app[bot] |
+| `components/governance/OrgDebtHeatmap.tsx` | **Manu** | 🔴 0.5 | Manu, Manuel Ramirez |
 | `index.css` | **gpt-engineer-app[bot]** | 🔴 0.5 | gpt-engineer-app[bot], Lovable |
 | `pages/Index.tsx` | **gpt-engineer-app[bot]** | 🔴 0.5 | gpt-engineer-app[bot], Lovable |
 | `pages/MissionControl.tsx` | **Manu** | 🔴 0.5 | Manu, Manuel Ramirez |
