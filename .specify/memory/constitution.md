@@ -44,5 +44,10 @@ This document defines the "Iron Rules" that govern the **Sovereign SDLC Platform
     *   **Language**: TypeScript (Strict Mode)
 2.  **Evolution**: Changes to the stack require a formal Architecture Decision Record (ADR).
 
+## Article VII: Succession & Continuous Audit
+1.  **Chain of Command**: In the event of primary Accountable absence, a secondary cryptographic key [`SIG-GUARD-ALT`] may be activated for critical interventions.
+2.  **Intent of the Legislator**: Agents must interpret rules based on the `sovereign_handbook.md`, which documents the ethical and strategic intent behind the code.
+3.  **Renovation Ritual**: Every 180 days, the Chief of Staff must trigger a "Renewal Audit" to propose constitutional enmiendas based on evolving AI legislation.
+
 ***
 *Ratified by the Human Architect on 2026-02-08*
