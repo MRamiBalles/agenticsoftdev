@@ -343,4 +343,46 @@ DistributedDispatcher
     └─ Failover log → forensic record of all re-dispatches
 ```
 
+## 22. Phase 4.7: Agent Self-Healing Risks
+
+| Threat | Defense Layer | Implementation |
+| :--- | :--- | :--- |
+| **Healing Loop (infinite retry)** | **Max Healing Attempts** | Default 3 attempts per task. Exceeded → forced escalation to human. |
+| **Misclassification (wrong action)** | **Confidence Threshold** | Confidence < 0.5 → immediate escalation. No healing attempted on uncertain diagnosis. |
+| **Silent Failure Masking** | **Full Healing Records** | Every attempt logged: category, action, result, duration. No silent swallowing of errors. |
+| **Unauthorized Self-Repair** | **Critical Task Escalation** | PLAN and DEPLOY tasks always escalate — no autonomous healing for high-impact operations. |
+| **Escalation Fatigue** | **Tiered Levels** | WARN (log), ALERT (notify), BLOCK (halt). Only critical paths block execution. |
+| **Healing Action Side Effects** | **Bounded Actions** | SCALE_DOWN reduces payload by fixed factor. REROUTE selects from existing workers. No unbounded mutations. |
+| **Pattern Evasion** | **Multi-Signal Detection** | Classification uses stderr patterns + exit codes + duration anomalies. Multiple signals increase confidence. |
+| **Stale Healing Strategy** | **Pluggable Strategies** | Strategies are configurable per failure category. Can be updated without code changes. |
+
+## 23. Phase 4.7 Architecture: Self-Healing Pipeline
+
+```
+Task Failure (DAGTaskResult with exitCode ≠ 0)
+    │
+    └─ FailureDetector.classify(result)
+         ├─ Pattern match: stderr regex, exit codes, duration anomalies
+         ├─ Category: OOM | TIMEOUT | DEPENDENCY | CRASH | PERMISSION | NETWORK | UNKNOWN
+         └─ Confidence: 0–1 (multi-signal scoring)
+
+HealingEngine.heal(taskId, agent, taskType, failure, executor)
+    ├─ Immediate escalation check:
+    │    ├─ Critical task type (PLAN, DEPLOY) → ESCALATE
+    │    ├─ Low confidence (< 0.5) → ESCALATE
+    │    └─ Max attempts exceeded (≥ 3) → ESCALATE
+    │
+    ├─ Strategy lookup by failure category:
+    │    ├─ OOM → SCALE_DOWN → REROUTE → ESCALATE
+    │    ├─ TIMEOUT → RETRY_WITH_BACKOFF → REROUTE → ESCALATE
+    │    ├─ DEPENDENCY → SKIP_DEPENDENCY → RESTART → ESCALATE
+    │    ├─ CRASH → RESTART → REROUTE → ESCALATE
+    │    ├─ PERMISSION → ESCALATE (immediate)
+    │    ├─ NETWORK → RETRY_WITH_BACKOFF → REROUTE → ESCALATE
+    │    └─ UNKNOWN → RESTART → ESCALATE
+    │
+    └─ HealingRecord logged for every attempt
+         └─ Feeds back into AdaptationEngine for learning
+```
+
 *Policy: "Security is not a feature; it is a constraint. Memory is not a luxury; it is a necessity. Autonomy without resilience is recklessness."*
