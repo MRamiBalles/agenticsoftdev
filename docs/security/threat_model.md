@@ -175,4 +175,53 @@ EventBus (in-process pub/sub)
 ForensicLogger ← onPublish / onReject callbacks log all bus activity
 ```
 
+## 14. Phase 4.3: Agent Negotiation Risks
+
+| Threat | Defense Layer | Implementation |
+| :--- | :--- | :--- |
+| **Vote Manipulation (double voting)** | **Immutable Votes** | Each voter can cast exactly one vote per proposal. Duplicate = `ALREADY_VOTED` rejection. |
+| **Unauthorized Veto (privilege escalation)** | **VETO Role Restriction** | Only `guardian` and `strategist` can cast VETO. Others = `VETO_NOT_PERMITTED`. |
+| **Sybil Attack (fake voters)** | **Eligible Voter List** | Proposals declare eligible voters at creation. Non-eligible = `NOT_ELIGIBLE` rejection. |
+| **Stalled Proposals (deadlock)** | **Configurable Timeout** | Proposals auto-expire after `timeoutMs` (default 5s). `checkTimeout()` triggers EXPIRED status. |
+| **Auction Bid Manipulation** | **Input Validation** | Capability (0-100), load (0-100), duration (>0) enforced. Invalid ranges rejected. |
+| **Auction Sniping (last-second bid)** | **Single Bid Rule** | Each agent can bid once per auction. `ALREADY_BID` prevents re-bidding. |
+| **Weighted Vote Abuse** | **Fixed Role Weights** | Weights are hardcoded (architect:3, strategist:2, others:1). Not configurable at runtime. |
+| **Decision Opacity** | **Full Tally Transparency** | `ConsensusResult` includes full vote tally, weighted tally, veto attribution. All published to EventBus. |
+
+## 15. Phase 4.3 Architecture: Negotiation Pipeline
+
+```
+NegotiationEngine
+    │
+    ├─ propose(proposer, description, options, strategy)
+    │    ├─ Creates Proposal (OPEN status)
+    │    └─ Publishes to 'negotiation.propose' via EventBus
+    │
+    ├─ vote(proposalId, voter, role, choice)
+    │    ├─ Eligibility check (voter list)
+    │    ├─ Duplicate check (immutable votes)
+    │    ├─ VETO permission check (guardian/strategist only)
+    │    ├─ Choice validation (must be in options or ABSTAIN/VETO)
+    │    ├─ Auto-resolve on quorum
+    │    └─ Publishes to 'negotiation.vote' via EventBus
+    │
+    ├─ resolve() → ConsensusResult
+    │    ├─ MAJORITY: >50% of non-abstain votes
+    │    ├─ UNANIMOUS: all non-abstain agree
+    │    ├─ WEIGHTED: role-based weights (arch:3, strat:2, rest:1)
+    │    ├─ VETO: immediate block by guardian/strategist, else majority
+    │    └─ Publishes to 'negotiation.result' via EventBus
+    │
+    └─ checkTimeout() → auto-EXPIRED if past deadline
+
+TaskAuction
+    │
+    ├─ create(taskId, taskType, initiator)
+    ├─ bid(auctionId, bidder, role, capability, load, duration)
+    │    └─ Validates ranges, prevents duplicates
+    └─ close() → AuctionResult
+         ├─ Score = capability(40%) + availability(30%) + speed(30%)
+         └─ Tie-break by role priority (architect > strategist > builder > ...)
+```
+
 *Policy: "Security is not a feature; it is a constraint. Memory is not a luxury; it is a necessity. Autonomy without resilience is recklessness."*
