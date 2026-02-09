@@ -264,4 +264,45 @@ Integration Points:
     └─ getTaskAffinity() → task routing decisions
 ```
 
+## 18. Phase 4.5: Persistent Execution State Risks
+
+| Threat | Defense Layer | Implementation |
+| :--- | :--- | :--- |
+| **Checkpoint Tampering** | **SHA-256 Integrity** | Every checkpoint stores a SHA-256 hash of the serialized snapshot. `INTEGRITY_VIOLATION` on mismatch. |
+| **Stale State Replay (time-travel attack)** | **Version Field** | Snapshots include `version` for forward compatibility. Old formats detectable. |
+| **Checkpoint Flooding (disk exhaustion)** | **Auto-Pruning** | `maxCheckpoints: 10` with FIFO eviction. Oldest checkpoints auto-deleted. |
+| **Partial State Corruption** | **Atomic Serialization** | Full snapshot serialized as single JSON blob. No partial writes. Deserialization fails cleanly. |
+| **Resume with Stale Credentials** | **No Secret Persistence** | Checkpoints serialize task state only. No API keys, tokens, or secrets in snapshots. |
+| **Replay Injection (fake events)** | **Read-Only Replay** | `ExecutionReplay` is pure read — emits events via callbacks, no side effects, no re-execution. |
+| **Re-queue Amplification** | **Status-Based Restore** | Only PENDING/READY/RUNNING tasks re-queued. COMPLETED/FAILED/SKIPPED preserved as-is. |
+
+## 19. Phase 4.5 Architecture: Persistence Pipeline
+
+```
+DAGEngine execution
+    │
+    ├─ CheckpointManager.notifyTaskCompleted()
+    │    └─ Auto-checkpoint every N tasks (default: 5)
+    │
+    ├─ CheckpointManager.save()
+    │    ├─ serializeGraph() → SerializedGraph (Map → Array)
+    │    ├─ Capture: executionOrder, retries, spawned, outcomes, messages
+    │    ├─ SHA-256 hash of JSON payload
+    │    ├─ Store in memory (Map<id, Checkpoint>)
+    │    └─ Auto-prune oldest (max 10 retained)
+    │
+    ├─ CheckpointManager.load(id) → RestoreResult
+    │    ├─ Verify SHA-256 integrity
+    │    ├─ deserializeGraph() → DAGGraph (Array → Map)
+    │    ├─ COMPLETED/FAILED/SKIPPED → preserved
+    │    └─ PENDING/READY/RUNNING → re-queued as PENDING
+    │
+    └─ ExecutionReplay.replay(snapshot) → ReplayEvent[]
+         ├─ DISPATCH / COMPLETE / FAIL events per task
+         ├─ SPAWN events for parent-child relationships
+         ├─ MESSAGE events from bus log
+         ├─ OUTCOME events from learning tracker
+         └─ Sequential indices for forensic ordering
+```
+
 *Policy: "Security is not a feature; it is a constraint. Memory is not a luxury; it is a necessity. Autonomy without resilience is recklessness."*
