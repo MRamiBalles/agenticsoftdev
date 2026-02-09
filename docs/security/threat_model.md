@@ -106,4 +106,31 @@ buildTaskGraph() → DAGEngine.validate() → DAGEngine.execute()
                                               └─ Dependency cascade (skip on failure)
 ```
 
+## 10. Phase 4.1: Dynamic Graph Mutation Risks
+
+| Threat | Defense Layer | Implementation |
+| :--- | :--- | :--- |
+| **Recursive Fork Bomb (unbounded spawning)** | **Depth Limiter** | `MutationController` enforces `maxDepth: 3`. Exceeding = DEPTH_EXCEEDED rejection with Art. III.1 ref. |
+| **Graph Size Explosion (memory exhaustion)** | **Graph Size Cap** | `maxGraphSize: 50` prevents runaway task accumulation. Rejected with GRAPH_SIZE_EXCEEDED. |
+| **Cycle Injection via Spawn** | **Simulated Cycle Detection** | Every spawn request is validated with Kahn's algorithm on a simulated graph before injection. |
+| **Duplicate Task ID Collision** | **ID Uniqueness Check** | Spawn requests with IDs already in the graph are rejected with DUPLICATE_ID. |
+| **Orphan Spawns (missing dependencies)** | **Dependency Existence Check** | All declared dependencies must exist in the graph. Missing deps = MISSING_DEPENDENCY rejection. |
+| **Context Cross-Contamination** | **Context Isolation** | Spawned tasks receive only: parent output (capped 500 chars) + declared payload. No sibling or global state access. |
+| **Privilege Escalation via Spawn** | **RBAC on Mutation Policy** | `enforceRBAC` flag enables permission checks on spawned task types (SecurityGate validates each dispatch). |
+| **Spawn-based Prompt Injection** | **SecurityGate per Task** | Every spawned task passes through the full SecurityGate pipeline on dispatch (input sanitization + RBAC + payload size). |
+
+## 11. Phase 4.1 Architecture: Mutating DAG Pipeline
+
+```
+DAGEngine.executeMutating() → MutationController.evaluate() → Graph Injection
+    │                              │                              │
+    ├─ Standard DAG execution      ├─ Depth check (max 3)        ├─ DAGTask created with:
+    ├─ MutatingTaskDispatcher      ├─ Graph size check (max 50)  │    depth = parent.depth + 1
+    │    returns TaskDispatchResult ├─ Duplicate ID check         │    parentId = parent.id
+    │    with optional SpawnReq[]  ├─ Dependency existence        │    _parentContext (isolated)
+    ├─ Spawns processed ONLY       ├─ Simulated cycle detection   └─ Status = PENDING (re-enters scheduler)
+    │    after parent COMPLETES    └─ RBAC validation
+    └─ Callbacks: onSpawn / onSpawnRejected
+```
+
 *Policy: "Security is not a feature; it is a constraint. Memory is not a luxury; it is a necessity. Autonomy without resilience is recklessness."*

@@ -7,7 +7,7 @@ import { RetrievalService } from './memory/retrieval-service';
 import { IngestPipeline } from './memory/ingest-pipeline';
 import { PlanningGate } from './memory/planning-gate';
 import { ContextCompactor, SessionEvent } from './memory/context-compactor';
-import { DAGEngine, DAGTask, DAGTaskResult, DAGGraph } from './dag-engine';
+import { DAGEngine, DAGTask, DAGTaskResult, DAGGraph, TaskDispatchResult } from './dag-engine';
 import { RetryPolicy } from './retry-policy';
 
 /**
@@ -22,6 +22,9 @@ import { RetryPolicy } from './retry-policy';
  *
  * Phase 4.0: DAG Orchestration (El Motor Agéntico)
  *   Parallel execution → self-healing retry → circuit breaker
+ *
+ * Phase 4.1: Dynamic Graph Mutation
+ *   Runtime task spawning → context isolation → recursion depth limits
  */
 
 class Orchestrator {
@@ -143,8 +146,12 @@ class Orchestrator {
             return;
         }
 
-        // Execute with the secure dispatcher
-        const result = await this.dagEngine.execute(graph, (task) => this.dispatchTask(task));
+        // Execute with the mutating dispatcher (Phase 4.1)
+        const result = await this.dagEngine.executeMutating(
+            graph,
+            (task) => this.dispatchTask(task),
+            { maxDepth: 3, maxGraphSize: 50 },
+        );
 
         // Log execution summary
         this.logger.record({
@@ -168,7 +175,7 @@ class Orchestrator {
      *
      * Pipeline: PlanningGate → SecurityGate → SandboxRuntime → ForensicLogger
      */
-    private async dispatchTask(task: DAGTask): Promise<DAGTaskResult> {
+    private async dispatchTask(task: DAGTask): Promise<TaskDispatchResult> {
         console.log(`🚀 Dispatching [${task.id}] to Agent [${task.agent}]...`);
 
         // ── Phase 3.1: Planning Gate (Memory Consultation) ──
@@ -190,7 +197,7 @@ class Orchestrator {
                     outcome: 'BLOCKED',
                     governance_check_ref: 'PLANNING_GATE',
                 });
-                return { exitCode: 1, stdout: '', stderr: `Planning Gate: ${memoryResult.reason}`, durationMs: 0 };
+                return { result: { exitCode: 1, stdout: '', stderr: `Planning Gate: ${memoryResult.reason}`, durationMs: 0 } };
             }
 
             if (memoryResult.decision === 'PROCEED_WITH_CONTEXT') {
@@ -223,7 +230,7 @@ class Orchestrator {
                 outcome: 'BLOCKED',
                 governance_check_ref: `ATDI+${verdict.atdiPenalty}`,
             });
-            return { exitCode: 1, stdout: '', stderr: `Security Gate: ${verdict.reason}`, durationMs: 0 };
+            return { result: { exitCode: 1, stdout: '', stderr: `Security Gate: ${verdict.reason}`, durationMs: 0 } };
         }
 
         // ── Phase 3: Sandbox Execution ──
@@ -252,10 +259,12 @@ class Orchestrator {
             });
 
             return {
-                exitCode: sandboxResult.exitCode,
-                stdout: cleanOutput,
-                stderr: cleanError,
-                durationMs: sandboxResult.durationMs,
+                result: {
+                    exitCode: sandboxResult.exitCode,
+                    stdout: cleanOutput,
+                    stderr: cleanError,
+                    durationMs: sandboxResult.durationMs,
+                },
             };
         } catch (e) {
             const errorMsg = (e as Error).message;
@@ -271,7 +280,7 @@ class Orchestrator {
                 outcome: 'FAILURE',
             });
 
-            return { exitCode: 1, stdout: '', stderr: errorMsg, durationMs: 0 };
+            return { result: { exitCode: 1, stdout: '', stderr: errorMsg, durationMs: 0 } };
         }
     }
 
