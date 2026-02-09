@@ -16,6 +16,7 @@ import { CheckpointManager } from './execution-persistence';
 import { WorkerRegistry, LoadBalancer } from './distributed-executor';
 import { FailureDetector, HealingEngine } from './agent-self-healing';
 import { ATDIEngine } from './atdi-engine';
+import { SpecDriftDetector } from './spec-drift-detector';
 
 /**
  * Agentic OS v5.0 - The Kernel
@@ -93,6 +94,9 @@ class Orchestrator {
 
     // Phase 5: ATDI Quality Engine
     private atdiEngine: ATDIEngine;
+
+    // Phase 6: Spec Drift Detection
+    private specDriftDetector: SpecDriftDetector;
 
     constructor(projectRoot?: string) {
         this.projectRoot = projectRoot ?? path.resolve(__dirname, '..', '..');
@@ -291,6 +295,28 @@ class Orchestrator {
         console.log("🌐 Phase 4.6 Distributed Execution: ARMED");
         console.log("🩹 Phase 4.7 Self-Healing: ARMED");
         console.log("📊 Phase 5 ATDI Quality Engine: ARMED");
+
+        // Initialize Spec Drift Detector (Phase 6)
+        this.specDriftDetector = new SpecDriftDetector({}, {
+            onDriftDetected: (alert) => {
+                console.warn(`📐 Drift [${alert.severity}] ${alert.featureId}: ${alert.message}`);
+                this.recordSessionEvent('system', 'SPEC_DRIFT', `${alert.severity}: ${alert.message}`);
+                this.logger.record({
+                    agent_id: 'system',
+                    trigger_event: `Spec drift: ${alert.featureId}`,
+                    context_snapshot: alert.message,
+                    chain_of_thought: `Drift detected for ${alert.featureId}: ${alert.message}`,
+                    action_type: 'PLAN_DECISION',
+                    action_payload: { featureId: alert.featureId, severity: alert.severity },
+                    outcome: alert.severity === 'CRITICAL' ? 'BLOCKED' : 'SUCCESS',
+                });
+            },
+            onAligned: (featureId) => {
+                this.recordSessionEvent('system', 'SPEC_ALIGNED', `Feature ${featureId} aligned`);
+            },
+        });
+
+        console.log("📐 Phase 6 Spec Drift Detector: ARMED");
     }
 
     public async boot() {
