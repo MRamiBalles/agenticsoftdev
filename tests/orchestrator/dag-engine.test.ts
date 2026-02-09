@@ -10,6 +10,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { DAGEngine, DAGTask, DAGTaskResult, DAGGraph, TaskDispatchResult, MutationController, SpawnRequest } from '../../src/orchestrator/dag-engine';
 import { RetryPolicy } from '../../src/orchestrator/retry-policy';
+import { EventBus } from '../../src/orchestrator/agent-bus';
 
 // ─── Helpers ───
 
@@ -1023,5 +1024,133 @@ describe('MutationController - Reactive Mutation', () => {
         expect(reactivePlan).toBeDefined();
         expect(reactiveResearch!.parentId).toBe('audit-1');
         expect(reactivePlan!.parentId).toBe('audit-1');
+});
+
+// ─── Phase 4.2: Message Processing via EventBus ───
+
+describe('DAGEngine - Message Processing (Phase 4.2)', () => {
+    let engine: DAGEngine;
+    let eventBus: EventBus;
+
+    beforeEach(() => {
+        engine = new DAGEngine({ maxConcurrency: 3, tickIntervalMs: 10, maxExecutionTimeMs: 5000 });
+        eventBus = new EventBus({ enforceRBAC: false });
     });
+
+    it('should publish messages from TaskDispatchResult to EventBus on success', async () => {
+        const graph = DAGEngine.buildGraph([
+            { id: 'plan-1', type: 'PLAN', agent: 'architect' },
+        ]);
+
+        const dispatcher = async (task: DAGTask): Promise<TaskDispatchResult> => ({
+            result: { exitCode: 0, stdout: 'OK', stderr: '', durationMs: 5 },
+            messages: [
+                { topic: 'task.completed', payload: { detail: 'plan finished' } },
+                { topic: 'agent.signal', payload: { signal: 'ready' } },
+            ],
+        });
+
+        await engine.executeMutating(graph, dispatcher, {}, eventBus);
+
+        const log = eventBus.getMessageLog();
+        expect(log.length).toBe(2);
+        expect(log[0].topic).toBe('task.completed');
+        expect(log[0].payload).toMatchObject({ detail: 'plan finished', _sourceTaskId: 'plan-1' });
+        expect(log[1].topic).toBe('agent.signal');
+    });
+
+    it('should publish messages even when task fails', async () => {
+        const graph = DAGEngine.buildGraph([
+            { id: 'audit-1', type: 'AUDIT', agent: 'guardian' },
+        ]);
+
+        const dispatcher = async (task: DAGTask): Promise<TaskDispatchResult> => ({
+            result: { exitCode: 1, stdout: '', stderr: 'vulnerability found', durationMs: 5 },
+            messages: [
+                { topic: 'task.failed', payload: { reason: 'CVE-2026-1234' } },
+            ],
+        });
+
+        await engine.executeMutating(graph, dispatcher, { enableReactiveMutation: false }, eventBus);
+
+        const log = eventBus.getMessageLog();
+        expect(log.length).toBe(1);
+        expect(log[0].topic).toBe('task.failed');
+        expect(log[0].payload).toMatchObject({ reason: 'CVE-2026-1234' });
+    });
+
+    it('should fire onMessage callback for each published message', async () => {
+        const onMessage = vi.fn();
+        engine = new DAGEngine(
+            { maxConcurrency: 3, tickIntervalMs: 10, maxExecutionTimeMs: 5000 },
+            undefined,
+            { onMessage },
+        );
+
+        const graph = DAGEngine.buildGraph([
+            { id: 'code-1', type: 'CODE', agent: 'builder' },
+        ]);
+
+        const dispatcher = async (task: DAGTask): Promise<TaskDispatchResult> => ({
+            result: { exitCode: 0, stdout: 'built', stderr: '', durationMs: 5 },
+            messages: [{ topic: 'task.completed', payload: { artifact: 'main.ts' } }],
+        });
+
+        await engine.executeMutating(graph, dispatcher, {}, eventBus);
+
+        expect(onMessage).toHaveBeenCalledTimes(1);
+        expect(onMessage.mock.calls[0][0].id).toBe('code-1');
+        expect(onMessage.mock.calls[0][1].topic).toBe('task.completed');
+    });
+
+    it('should not crash when no eventBus is provided', async () => {
+        const graph = DAGEngine.buildGraph([
+            { id: 'plan-1', type: 'PLAN', agent: 'architect' },
+        ]);
+
+        const dispatcher = async (task: DAGTask): Promise<TaskDispatchResult> => ({
+            result: { exitCode: 0, stdout: 'OK', stderr: '', durationMs: 5 },
+            messages: [{ topic: 'task.completed', payload: { done: true } }],
+        });
+
+        // No eventBus passed — should just ignore messages
+        const result = await engine.executeMutating(graph, dispatcher);
+        expect(result.completed).toBe(1);
+    });
+
+    it('should handle empty messages array gracefully', async () => {
+        const graph = DAGEngine.buildGraph([
+            { id: 'plan-1', type: 'PLAN', agent: 'architect' },
+        ]);
+
+        const dispatcher = async (task: DAGTask): Promise<TaskDispatchResult> => ({
+            result: { exitCode: 0, stdout: 'OK', stderr: '', durationMs: 5 },
+            messages: [],
+        });
+
+        await engine.executeMutating(graph, dispatcher, {}, eventBus);
+        expect(eventBus.getMessageLog().length).toBe(0);
+    });
+
+    it('should deliver messages to subscribers during execution', async () => {
+        const received: { topic: string; payload: Record<string, unknown> }[] = [];
+        eventBus.subscribe('task.completed', 'observer', 'guardian', (msg) => {
+            received.push({ topic: msg.topic, payload: msg.payload });
+        });
+
+        const graph = DAGEngine.buildGraph([
+            { id: 'code-1', type: 'CODE', agent: 'builder' },
+        ]);
+
+        const dispatcher = async (task: DAGTask): Promise<TaskDispatchResult> => ({
+            result: { exitCode: 0, stdout: 'done', stderr: '', durationMs: 5 },
+            messages: [{ topic: 'task.completed', payload: { file: 'app.tsx' } }],
+        });
+
+        await engine.executeMutating(graph, dispatcher, {}, eventBus);
+
+        expect(received.length).toBe(1);
+        expect(received[0].payload).toMatchObject({ file: 'app.tsx' });
+    });
+});
 });
