@@ -3,14 +3,20 @@ import { useState, useEffect } from 'react';
 import { HealthMonitor } from '../components/mission_control/HealthMonitor';
 import { TimelineFeed } from '../components/mission_control/TimelineFeed';
 import { ConeWidget } from '../components/mission_control/ConeWidget';
+import { DAGStatusPanel } from '../components/mission_control/DAGStatusPanel';
+import { AgentPerformancePanel } from '../components/mission_control/AgentPerformancePanel';
+import { HealingEventsPanel } from '../components/mission_control/HealingEventsPanel';
+import { CheckpointPanel } from '../components/mission_control/CheckpointPanel';
 import { RaciCard } from '../components/governance/RaciCard';
-import { Satellite, Shield, LayoutDashboard, Brain, Users, Network, ShieldCheck } from 'lucide-react';
+import { Satellite, Shield, LayoutDashboard, Brain, Users, Network, ShieldCheck, Cpu, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AgentReasoningTimeline } from "@/components/governance/AgentReasoningTimeline";
 import { OrgDebtHeatmap } from "@/components/governance/OrgDebtHeatmap";
 import { ArchitectureRadar } from "@/components/governance/ArchitectureRadar";
 import { OperationsLog } from "@/components/ops/OperationsLog";
+import { useOrchestratorTelemetry } from '@/hooks/useOrchestratorTelemetry';
 
 // Mock Data Loaders (Simulating API calls)
 import adrData from '../../.ai/knowledge_base/adr_summary.json';
@@ -20,6 +26,9 @@ export default function MissionControl() {
     const [timelineEvents, setTimelineEvents] = useState<any[]>([]);
     const [pendingTasks, setPendingTasks] = useState<any[]>([]);
     const [currentPhase, setCurrentPhase] = useState<'Specify' | 'Plan' | 'Task' | 'Implement'>('Implement');
+
+    // Orchestrator telemetry (Phases 4.0–4.8)
+    const telemetry = useOrchestratorTelemetry(42);
 
     useEffect(() => {
         // 1. Load ATDI History (Mock)
@@ -61,6 +70,8 @@ export default function MissionControl() {
 
     }, []);
 
+    const latestAtdi = atdiHistory.length > 0 ? atdiHistory[atdiHistory.length - 1].score : 0;
+
     return (
         <div className="container mx-auto py-6 space-y-8 bg-slate-50 min-h-screen">
             {/* Header */}
@@ -79,8 +90,9 @@ export default function MissionControl() {
                 </div>
             </div>
 
-            <Tabs defaultValue="overview" className="space-y-6">
+            <Tabs defaultValue="orchestrator" className="space-y-6">
                 <TabsList>
+                    <TabsTrigger value="orchestrator" className="flex items-center gap-2 text-indigo-700"><Cpu size={16} /> Orchestrator</TabsTrigger>
                     <TabsTrigger value="overview" className="flex items-center gap-2"><LayoutDashboard size={16} /> Mission Overview</TabsTrigger>
                     <TabsTrigger value="org" className="flex items-center gap-2"><Users size={16} /> Team & Friction</TabsTrigger>
                     <TabsTrigger value="arch" className="flex items-center gap-2"><Network size={16} /> Architecture Radar</TabsTrigger>
@@ -88,13 +100,49 @@ export default function MissionControl() {
                     <TabsTrigger value="audit" className="flex items-center gap-2"><Brain size={16} /> Forensic Audit</TabsTrigger>
                 </TabsList>
 
+                {/* ─── NEW: Orchestrator Tab (Phases 4.0–4.8) ─── */}
+                <TabsContent value="orchestrator" className="space-y-6">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <h2 className="text-xl font-semibold text-slate-800">Agentic OS v5.0 Kernel</h2>
+                            <Badge variant={telemetry.isLive ? 'default' : 'secondary'} className="text-[10px]">
+                                {telemetry.isLive ? '● LIVE' : '○ SIMULATED'}
+                            </Badge>
+                        </div>
+                        <Button variant="outline" size="sm" onClick={telemetry.refresh} className="flex items-center gap-1.5">
+                            <RefreshCw size={14} /> Refresh
+                        </Button>
+                    </div>
+
+                    {/* Row 1: DAG + Agent Performance */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <DAGStatusPanel execution={telemetry.dagExecution} />
+                        <AgentPerformancePanel agents={telemetry.agentStats} />
+                    </div>
+
+                    {/* Row 2: Healing + Checkpoints */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <HealingEventsPanel
+                            events={telemetry.healingEvents}
+                            totalDetected={telemetry.healingSummary.detected}
+                            totalHealed={telemetry.healingSummary.healed}
+                            totalEscalated={telemetry.healingSummary.escalated}
+                        />
+                        <CheckpointPanel
+                            checkpoints={telemetry.checkpoints}
+                            autoInterval={telemetry.checkpointPolicy.autoInterval}
+                            maxCheckpoints={telemetry.checkpointPolicy.maxCheckpoints}
+                        />
+                    </div>
+                </TabsContent>
+
                 <TabsContent value="overview" className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div className="lg:col-span-3">
-                            <HealthMonitor data={atdiHistory} />
+                            <HealthMonitor atdiScore={latestAtdi} history={atdiHistory} />
                         </div>
                         <div>
-                            <ConeWidget phase={currentPhase} />
+                            <ConeWidget phase={currentPhase} uncertaintyFactor={currentPhase === 'Specify' ? 4.0 : currentPhase === 'Plan' ? 2.0 : currentPhase === 'Task' ? 1.5 : 1.0} />
                         </div>
                     </div>
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
