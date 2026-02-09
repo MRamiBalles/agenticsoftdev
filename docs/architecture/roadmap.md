@@ -1,5 +1,7 @@
 # The Sovereign SDLC Platform: Roadmap & Architecture
 
+> **Last updated:** 2026-02-09 — Reflects completion through Orchestrator Phase 4.8
+
 ## 1. Project Vision
 A software development platform designed under **Spec-Driven Development (SDD)** and **ISO/IEC 42001** principles.
 Unlike traditional IDEs, this platform inverts the hierarchy:
@@ -11,18 +13,18 @@ Unlike traditional IDEs, this platform inverts the hierarchy:
 ### Module 0: The Constitution (Static Governance)
 *   **Function**: Define non-negotiable "Iron Rules".
 *   **Components**: `constitution.md`, Admin Rules Editor.
-*   **Status**: ✅ Designed.
+*   **Status**: ✅ Completed.
 
 ### Module 1: Strategy & Market (PM Agent)
 *   **Function**: Convert vague ideas into structured specifications.
 *   **Flow**: `/specify` -> `spec.md` (User Journeys, Success Criteria).
-*   **Status**: 🔄 In Progress.
+*   **Status**: ✅ Completed.
 
 ### Module 2: Architecture & Planning (Architect Agent)
 *   **Function**: Translate specs into safe technical plans.
 *   **Flow**: `/plan` -> `plan.md`, `architecture.md`.
 *   **Tools**: ATDI Calculator (Technical Debt prediction).
-*   **Status**: 🚧 Next Phase.
+*   **Status**: ✅ Completed.
 
 ### Module 3: Construction (Coding Swarm)
 *   **Function**: Execute the plan without deviation ("Vibe Coding" prohibited).
@@ -44,20 +46,94 @@ Unlike traditional IDEs, this platform inverts the hierarchy:
 *   Deliverables: Supabase Tables (RACI/Logs), SQL Iron Rules, Approval UI.
 *   Validation: Manual Dogfooding (Failed "Empty Justification" test, Failed "Agent Accountability" test).
 
-### Phase 2: The Quality Engine (🚧 NEXT UP)
+### Phase 2: The Quality Engine (✅ COMPLETED)
 *   Objective: Automate technical debt review.
-*   Deliverables:
-    *   Static Analysis Integration (Arcan/Custom Script).
-    *   **ATDI Calculation**: Index based on Architectural Smells (Cycles, Hubs).
-    *   **Quality Traffice Light**: Visual indicator in the Governance Card.
-*   Tests:
-    *   "God Component" Simulation (Verify auto-block).
-    *   Explainability Check (Verify AI explanation of rejection).
+*   Deliverables: ATDI Calculator, Static Analysis, Quality Traffic Light.
 
-### Phase 3: Full SDD Flow
-*   Objective: Close the loop `/specify` -> `/plan` -> `/implement`.
-*   Deliverables: Mission Control Chat Interface, Spec/Plan Version Management.
-*   Tests: Drift Detection (Change spec mid-project and verify plan alert).
+### Phase 3: Security & Isolation Pipeline (✅ COMPLETED)
+*   Objective: Sandboxed, audited agent execution.
+*   Deliverables:
+    *   **SecurityGate**: Pre-dispatch RBAC validation, input sanitization, command whitelist.
+    *   **SandboxRuntime**: Docker container lifecycle (--network none, --read-only, 256MB, 30s timeout).
+    *   **ForensicLogger**: Append-only SHA-256 chain-linked audit ledger.
+*   Tests: 36 security tests passing.
+
+### Phase 3.1: Institutional Memory — RAG (✅ COMPLETED)
+*   Objective: Sovereign vector store for institutional knowledge.
+*   Deliverables:
+    *   **SemanticChunker**: Markdown → atomic chunks with faceted metadata.
+    *   **IngestPipeline**: Constitution + ADRs → local TF-IDF 384-dim embeddings.
+    *   **RetrievalService**: Cosine similarity search with RBAC.
+    *   **PlanningGate**: Mandatory pre-plan consultation, contradiction detection.
+    *   **ContextCompactor**: Post-session summarization → reingest.
+*   Tests: 21 memory tests passing.
+
+### Phase 4.0: DAG Orchestration Engine (✅ COMPLETED)
+*   Objective: Replace linear execution with dependency-aware parallel DAG.
+*   Deliverables:
+    *   **DAGEngine**: Topological sort, concurrent dispatch, cycle detection.
+    *   **RetryPolicy**: Per-task-type retry limits with exponential backoff + circuit breaker.
+    *   **7 Agent Roles**: architect, builder, guardian, strategist, researcher, devops, designer.
+    *   **9 Task Types**: PLAN, CODE, AUDIT, TEST, REVIEW, DEPLOY, RESEARCH, DESIGN, INFRA_PROVISION.
+*   Tests: 33 DAG tests passing.
+
+### Phase 4.1: Dynamic Graph Mutation (✅ COMPLETED)
+*   Objective: Allow tasks to spawn child tasks at runtime.
+*   Deliverables: `executeMutating()` with depth/size guards, spawn callbacks.
+
+### Phase 4.2: Agent Communication Bus (✅ COMPLETED)
+*   Objective: Typed pub/sub messaging between agents.
+*   Deliverables: **EventBus** with RBAC, TTL, channel depth limits, dead-letter queue.
+
+### Phase 4.3: Agent Negotiation Protocol (✅ COMPLETED)
+*   Objective: Collective decision-making for multi-agent consensus.
+*   Deliverables:
+    *   **NegotiationEngine**: Proposals, votes, MAJORITY/UNANIMOUS/WEIGHTED strategies.
+    *   **TaskAuction**: Capability-based bid scoring, load-aware assignment.
+
+### Phase 4.4: Agent Learning & Adaptation (✅ COMPLETED)
+*   Objective: Data-driven performance optimization.
+*   Deliverables:
+    *   **OutcomeTracker**: Per-agent/task-type stats with exponential decay weighting.
+    *   **AdaptationEngine**: Calibrated capability scores, task affinity, adaptive retry limits.
+
+### Phase 4.5: Persistent Execution State (✅ COMPLETED)
+*   Objective: Crash recovery and forensic replay.
+*   Deliverables:
+    *   **CheckpointManager**: Auto-save, SHA-256 integrity, partial restore, event replay.
+    *   Auto-checkpoint every N tasks, max checkpoint pruning.
+
+### Phase 4.6: Distributed Execution (✅ COMPLETED)
+*   Objective: Multi-worker task distribution.
+*   Deliverables:
+    *   **WorkerRegistry**: Worker lifecycle, capability tracking, heartbeat-based liveness.
+    *   **LoadBalancer**: LEAST_LOADED / ROUND_ROBIN / CAPABILITY_MATCH strategies.
+
+### Phase 4.7: Agent Self-Healing (✅ COMPLETED)
+*   Objective: Autonomous failure detection and recovery.
+*   Deliverables:
+    *   **FailureDetector**: Classify failures (OOM, NETWORK_ERROR, TIMEOUT, DEPENDENCY_FAILURE).
+    *   **HealingEngine**: Multi-strategy healing (SCALE_DOWN, RETRY_WITH_BACKOFF, ISOLATE_AND_RETRY), escalation to human.
+
+### Phase 4.8: Simulation Sandbox (✅ COMPLETED)
+*   Objective: End-to-end scenario testing without live execution.
+*   Deliverables:
+    *   **SimulationEngine**: Configurable scenarios (HAPPY_PATH, HEALING_RECOVERY, etc.).
+    *   **ScenarioRunner**: Deterministic seeded execution with metrics collection.
+*   Tests: 27 simulation tests passing.
+
+### Orchestrator Integration (✅ COMPLETED)
+*   All phases wired into `src/orchestrator/main.ts` kernel.
+*   DAG callbacks → OutcomeTracker + CheckpointManager + HealingEngine.
+*   11 end-to-end integration tests covering cross-subsystem flows.
+*   **372 total tests passing.**
+
+### MissionControl Dashboard (✅ COMPLETED)
+*   **Orchestrator Tab**: DAG status, Agent performance, Self-healing events, Checkpoint timeline.
+*   **Mission Overview Tab**: ATDI health monitor, Cone of uncertainty, Timeline feed.
+*   **Live Ops Tab**: Operations log with SRE interventions.
+*   **Forensic Audit Tab**: Agent reasoning timeline.
+*   Simulated telemetry hook (ready for WebSocket backend).
 
 ## 4. Documentation & Knowledge Base
 The platform references its own documentation as the source of truth for Agents.
@@ -66,83 +142,38 @@ The platform references its own documentation as the source of truth for Agents.
 *   `.ai/knowledge_base/moral_crumple_zones.md`: UI safety protocols.
 *   `.ai/knowledge_base/sdd_manifesto.md`: Coding philosophy.
 
-## 5. Vision v2.0: The Sovereign Memory
-Building the "Project Brain" to enable self-healing and learning.
+## 5. Remaining Roadmap
 
-### A. Project Constitution (✅ STARTED)
-*   **Goal**: Ensure every agent prompt is grounded in immutable rules.
-*   **Deliverable**: `constitution.md` (The "System of Quality").
+### Phase 5: ATDI Quality Engine Integration (🔄 NEXT)
+*   Integrate ATDI scoring into orchestrator dispatch pipeline.
+*   Block deployments exceeding debt threshold.
 
-### B. Mission Control Dashboard
-*   **Goal**: Visualize the state of the project beyond simple tasks.
-*   **Features**:
-    *   **Debt Thermometer**: Real-time ATDI gauge.
-    *   **Con of Uncertainty**: Visualization of project risk reducing over time.
-    *   **Sovereign Chat**: Native interface to interact with Agents (Modify Spec, Request Audits).
+### Phase 6: Spec Versioning & Drift Detection
+*   Close the `/specify` → `/plan` → `/implement` loop.
+*   Detect spec changes mid-project and alert plan divergence.
 
-### C. Self-Healing Pipelines (SRE Agent)
-*   **Goal**: Autonomous incident response.
-*   **Scenario**: Test fails -> Agent analyzes log -> Agent proposes fix -> Guardian validates -> Human approves.
+### Phase 7: Frontend ↔ Orchestrator WebSocket Bridge
+*   Replace simulated telemetry with live WebSocket connection.
+*   Real-time DAG progress, healing events, checkpoint notifications.
 
-## 6. Phase 8: Advanced Intelligence (The Accessible Brain)
+### Phase 8: Advanced Intelligence (The Accessible Brain)
 *   **Strategic Priority**: Explainability (XAI) via Deterministic Logic (Phase 8a) then ML (Phase 8b).
 *   **Goal**: Satisfy Constitution Art I.2 ("Right to Explanation") without heavy Python infrastructure initially.
 *   **Feature**: **Heuristic Risk Analysis (Deterministic SHAP)**.
     *   **Phase 8a (TypeScript)**: Calculate exact marginal contribution of files to the ATDI score (Math-based).
     *   **Phase 8b (Future)**: Full SHAP/LIME when ML models are integrated for prediction.
 
-## 8. Phase 9: Organizational Intelligence (v2.1 - The Sovereign Mind)
+### Phase 9: Organizational Intelligence (v2.1 - The Sovereign Mind)
 *   **Strategic Goal**: Prevent "Organizational Debt" and enforce "Agent Sovereignty".
 *   **Key Pillars**:
-    1.  **Organizational Debt Manager**:
-        *   *Concept*: Inverse Conway's Law.
-        *   *Tool*: **Sociotechnical Agent** analyzing commit/agent coordination costs.
-    2.  **Advanced Agent Governance (Moral Crumple Zones)**:
-        *   *Concept*: ISO 42001 & EU AI Act Compliance.
-        *   *Tool*: **Black Box Recorder** (Forensic "Chain-of-Thought" logs).
-    3.  **Distributed System Smells**:
-        *   *Concept*: Scaling beyond the monolith.
-        *   *Tool*: **Graph Analysis** for Hub-like & Cyclic Dependencies (Arcan logic).
-    4.  **Dynamic Planning (The Living Cone)**:
-        *   *Concept*: Evidence-Based Scheduling.
-        *   *Tool*: **Dynamic Estimator** that recalibrates `plan.md` based on real velocity.
+    1.  **Organizational Debt Manager**: Inverse Conway's Law via Sociotechnical Agent.
+    2.  **Advanced Agent Governance**: ISO 42001 & EU AI Act Compliance via Black Box Recorder.
+    3.  **Distributed System Smells**: Graph Analysis for Hub-like & Cyclic Dependencies.
+    4.  **Dynamic Planning**: Evidence-Based Scheduling with Dynamic Estimator.
 
-## 9. Phase 10: Fortress Security (The Shield)
-*   **Goal**: Hard-gating deployments on security, not just architecture.
-*   **Tools**:
-    *   **SAST Integration**: Snyk/SonarQube blocking pipelines.
-    *   **Dependency Audit**: Automated `npm audit` checks in the Guardian.
+### Phase 10: Fortress Security (The Shield)
+*   Hard-gating deployments on security (SAST, dependency audit).
 
-## 10. Phase 10: Sovereign SRE (Operations & Self-Healing)
-**Goal:** Transform the platform into a self-repairing ecosystem (AIOps).
-- **SRE Agent:** Autonomous monitor that detects stability anomalies (cycles, friction, test failures).
-- **Auto-Revert Protocol:** "Do No Harm" implementation. Automatically reverts changes that break the build or introduce critical architectural smells.
-- **Flakiness Detox:** Identification and isolation of non-deterministic tests.
-- **Incident Response:** Automated post-mortem generation in `ledger.jsonl`.
-
-## 11. Phase 11: The Executive Layer (Orchestration & Value)
-**Goal:** Solve the "Paradox of Agentic Complexity" via high-level strategic alignment.
-- **Chief of Staff (Meta-Agent):** Orchestrator that resolves conflicts between specialist agents (e.g., Security vs. Speed) based on current strategy.
-- **Value Stream Alignment:** Agent that links technical tasks (commits) to business KPIs (ROI, Retention), preventing "Innovation Theater".
-- **Cognitive Dashboard:** "Explainability Interface" that aggregates agent negotiations to reduce human cognitive load.
-
-### Phase 11 Safeguards (The "Wise" System)
-1.  **Sovereignty Directive (RACI Gold Rule):** Agents are **Responsible**, Humans are **Accountable**. Critical strategic decisions (Budget, Kill-Switch) require cryptographic Human Signature.
-2.  **Atrophy Protocol (The Terminator):** The "Value Aligner" must proactively propose the **depreciation** of low-value features/code ("The Kill Switch") to combat Digital Atrophy.
-3.  **Strategic XAI:** Every high-level decision must be accompanied by a natural language justification derived from data (e.g., SHAP for Business), preventing "Black Box" management.
-
-
-## 12. Phase 16: Institutionalization & Living Compliance (v3.3)
-*   **Goal**: Make bureaucracy invisible and audit automatic (ISO 42001).
-*   **Action 1**: **Continuous Audit Log (Evidence-as-Code)**. Real-time cryptographic proof of governance events.
-*   **Action 2**: **Interrogable Constitution (RAG)**. Vectorized governance rules for instant agent querying.
-
-## 13. Phase 17: The Cognitive Layer (v3.4)
-*   **Goal**: Prevent project amnesia and enhance decision-making.
-*   **Action 1**: **ADR Engine**. AI-managed Architecture Decision Records.
-*   **Action 2**: **Challenge Agent (Devil's Advocate)**. An agent dedicated to finding logic holes in specs/plans.
-
-## 14. Phase 18: Socio-Technical Alignment (v4.0)
-*   **Goal**: Align team structure with software architecture (Inverse Conway's Law).
-*   **Action 1**: **Conway Friction Radar**. Detect organizational coupling through commit patterns.
-*   **Action 2**: **Process Gardener**. Identify and deprecate zombie bureaucratic processes.
+### Phase 11: Chaos Engineering
+*   Fault injection into orchestrator subsystems.
+*   Verify self-healing, checkpoint recovery, circuit breaker behavior under stress.

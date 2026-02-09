@@ -10,7 +10,17 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:orchestrator": "vitest run tests/orchestrator/ --config vitest.node.config.ts",
+    "test:security": "vitest run tests/security/ --config vitest.node.config.ts",
+    "test:memory": "vitest run tests/memory/ --config vitest.node.config.ts",
+    "test:all": "vitest run tests/ --config vitest.node.config.ts",
+    "audit:governance": "npx tsx scripts/verify_governance.ts",
+    "check:constitution": "npx tsx scripts/governance/check_constitution.ts",
+    "check:deps": "npx madge --circular --extensions ts src/",
+    "index:adrs": "npx tsx scripts/index_adrs.ts",
+    "sre:monitor": "npx tsx scripts/sre_monitor.ts",
+    "governance:seal": "npx tsx scripts/governance/seal_manifesto.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
