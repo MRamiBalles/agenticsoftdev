@@ -17,6 +17,7 @@ import { WorkerRegistry, LoadBalancer } from './distributed-executor';
 import { FailureDetector, HealingEngine } from './agent-self-healing';
 import { ATDIEngine } from './atdi-engine';
 import { SpecDriftDetector } from './spec-drift-detector';
+import { TelemetryEmitter } from './telemetry-emitter';
 
 /**
  * Agentic OS v5.0 - The Kernel
@@ -97,6 +98,9 @@ class Orchestrator {
 
     // Phase 6: Spec Drift Detection
     private specDriftDetector: SpecDriftDetector;
+
+    // Phase 7: Telemetry Bridge
+    private telemetry: TelemetryEmitter;
 
     constructor(projectRoot?: string) {
         this.projectRoot = projectRoot ?? path.resolve(__dirname, '..', '..');
@@ -317,6 +321,12 @@ class Orchestrator {
         });
 
         console.log("📐 Phase 6 Spec Drift Detector: ARMED");
+
+        // Initialize Telemetry Bridge (Phase 7)
+        this.telemetry = new TelemetryEmitter();
+        this.telemetry.emit('SYSTEM_BOOT', 'kernel', { version: '5.0', projectRoot: this.projectRoot });
+
+        console.log("📡 Phase 7 Telemetry Bridge: ARMED");
     }
 
     public async boot() {
