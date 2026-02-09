@@ -16,6 +16,7 @@
 
 import { RetryPolicy, TaskType } from './retry-policy';
 import type { AgentMessage, AgentMailbox } from './agent-bus';
+import { EventBus, AgentMailbox as AgentMailboxClass } from './agent-bus';
 import { AgentRole, ROLE_PERMISSIONS, TASK_PERMISSION_MAP, Permission } from './security-gate';
 
 // ─── Types ───
@@ -524,6 +525,7 @@ export class DAGEngine {
         graph: DAGGraph,
         dispatcher: MutatingTaskDispatcher,
         mutationPolicy?: Partial<MutationPolicy>,
+        eventBus?: EventBus,
     ): Promise<DAGExecutionResult> {
         const startTime = Date.now();
         const executionOrder: string[] = [];
@@ -582,7 +584,7 @@ export class DAGEngine {
                 this.callbacks.onDispatch?.(task);
 
                 const taskPromise = this.executeMutatingTask(
-                    task, graph, dispatcher, executionOrder, controller,
+                    task, graph, dispatcher, executionOrder, controller, eventBus,
                 ).then(({ retries, spawned }) => {
                     totalRetries += retries;
                     totalSpawned += spawned;
@@ -626,6 +628,7 @@ export class DAGEngine {
         dispatcher: MutatingTaskDispatcher,
         executionOrder: string[],
         controller: MutationController,
+        eventBus?: EventBus,
     ): Promise<{ retries: number; spawned: number }> {
         let retries = 0;
         let spawned = 0;
@@ -682,6 +685,9 @@ export class DAGEngine {
                             this.callbacks.onSpawnRejected?.(task, request, reason);
                         }
                     }
+
+                    // Process messages via EventBus
+                    this.processMessages(task, dispatchResult.messages, eventBus);
                 } else {
                     this.callbacks.onFail?.(task, result);
 
@@ -748,6 +754,9 @@ export class DAGEngine {
                         } else {
                             this.skipDependents(task.id, graph);
                         }
+
+                        // Process messages from failed tasks too
+                        this.processMessages(task, dispatchResult.messages, eventBus);
                     }
                 }
             } catch (error) {
@@ -765,6 +774,51 @@ export class DAGEngine {
 
         await runOnce();
         return { retries, spawned };
+    }
+
+    // ─── Private: Message Processing (Phase 4.2 Integration) ───
+
+    /**
+     * Publishes TaskDispatchResult.messages via the EventBus.
+     * Resolves agent role from MutationPolicy.agentRoles or defaults to 'builder'.
+     */
+    private processMessages(
+        task: DAGTask,
+        messages: TaskDispatchResult['messages'],
+        eventBus?: EventBus,
+    ): void {
+        if (!messages || messages.length === 0 || !eventBus) return;
+
+        // Resolve the agent's role for RBAC on publish
+        const agentRole: AgentRole = (task.payload as Record<string, unknown>)?._agentRole as AgentRole ?? 'builder';
+
+        for (const msg of messages) {
+            const publishResult = eventBus.publish(
+                msg.topic,
+                task.agent,
+                agentRole,
+                { ...msg.payload, _sourceTaskId: task.id },
+                { correlationId: task.parentId },
+            );
+
+            if (publishResult.success) {
+                // Fire onMessage callback for forensic logging
+                const agentMessage: AgentMessage = {
+                    id: publishResult.messageId!,
+                    topic: msg.topic,
+                    sender: task.agent,
+                    senderRole: agentRole,
+                    payload: msg.payload,
+                    timestamp: Date.now(),
+                    ttlMs: 60000,
+                    correlationId: task.parentId,
+                };
+                this.callbacks.onMessage?.(task, agentMessage);
+                console.log(`📨 [${task.id}] published message to [${msg.topic}]`);
+            } else {
+                console.warn(`📨 [${task.id}] message to [${msg.topic}] rejected: ${publishResult.reason}`);
+            }
+        }
     }
 
     // ─── Private: Result Builder ───
