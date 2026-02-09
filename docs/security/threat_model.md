@@ -385,4 +385,41 @@ HealingEngine.heal(taskId, agent, taskType, failure, executor)
          └─ Feeds back into AdaptationEngine for learning
 ```
 
+## 24. Phase 4.8: Multi-Agent Simulation Risks
+
+| Threat | Defense Layer | Implementation |
+| :--- | :--- | :--- |
+| **Simulation Escape (sim affects production)** | **Isolated Subsystems** | Simulation creates its own EventBus, WorkerRegistry, OutcomeTracker instances. No shared state with production. |
+| **Non-Deterministic Results** | **Seeded RNG** | `SeededRandom` (xorshift32) ensures reproducible runs with same seed. Seed=0 falls back to `Date.now()`. |
+| **Unbounded Simulation Time** | **Capped Latency** | Simulated delays capped at 10ms regardless of configured latency. Prevents runaway test durations. |
+| **False Confidence from Sim** | **Scenario Diversity** | 4 predefined scenarios (happy path, cascading failure, healing recovery, high contention) test different failure modes. |
+| **Sim Data Leaking to Learning** | **Scoped Tracker** | Each simulation creates a fresh `OutcomeTracker`. Sim outcomes never pollute production learning data. |
+| **Resource Exhaustion in Sim** | **Bounded Graphs** | Predefined graphs have 3–6 tasks. Custom graphs are user-controlled. No recursive spawning in sim. |
+
+## 25. Phase 4.8 Architecture: Simulation Pipeline
+
+```
+ScenarioRunner.buildScenario(type, seed)
+    ├─ HAPPY_PATH: 3 reliable agents, simple DAG, all subsystems
+    ├─ CASCADING_FAILURE: low-reliability builder, chain DAG, healing on
+    ├─ HEALING_RECOVERY: mixed reliability, OOM failures, healing on
+    └─ HIGH_CONTENTION: 3 builders competing, parallel DAG, intermittent faults
+
+SimulationEngine(config)
+    ├─ Initializes isolated subsystems:
+    │    EventBus, OutcomeTracker, AdaptationEngine,
+    │    WorkerRegistry, FailureDetector, HealingEngine, CheckpointManager
+    │
+    ├─ run() → SimResult
+    │    ├─ Dependency-aware task scheduling
+    │    ├─ Agent selection (capability + learning affinity)
+    │    ├─ Simulated execution (seeded RNG for success/failure)
+    │    ├─ Failure → FailureDetector → HealingEngine (if enabled)
+    │    ├─ Auto-checkpoint every 3 tasks (if enabled)
+    │    ├─ Outcome recording (if learning enabled)
+    │    └─ Full event timeline with sequential indices
+    │
+    └─ SimMetrics: success rate, healing rate, per-agent stats, latency
+```
+
 *Policy: "Security is not a feature; it is a constraint. Memory is not a luxury; it is a necessity. Autonomy without resilience is recklessness."*
