@@ -4,6 +4,10 @@ import * as path from 'path';
 import { SecurityGate, AgentRole } from './security-gate';
 import { SandboxRuntime } from './sandbox-runtime';
 import { ForensicLogger } from './forensic-logger';
+import { RetrievalService } from './memory/retrieval-service';
+import { IngestPipeline } from './memory/ingest-pipeline';
+import { PlanningGate } from './memory/planning-gate';
+import { ContextCompactor, SessionEvent } from './memory/context-compactor';
 
 /**
  * Agentic OS v5.0 - The Kernel
@@ -11,6 +15,9 @@ import { ForensicLogger } from './forensic-logger';
  *
  * Phase 3: Security & Isolation Pipeline
  *   SecurityGate.validate() → SandboxRuntime.execute() → ForensicLogger.record()
+ *
+ * Phase 3.1: Institutional Memory (Protocolo Mnemosyne)
+ *   PlanningGate.evaluate() → context injection → contradiction detection
  */
 
 interface TaskNode {
@@ -39,16 +46,30 @@ class Orchestrator {
     private logger: ForensicLogger;
     private projectRoot: string;
 
+    // Phase 3.1: Institutional Memory
+    private retrieval: RetrievalService;
+    private ingestPipeline: IngestPipeline;
+    private planningGate: PlanningGate;
+    private compactor: ContextCompactor;
+    private sessionEvents: SessionEvent[] = [];
+
     constructor(projectRoot?: string) {
         this.projectRoot = projectRoot ?? path.resolve(__dirname, '..', '..');
         console.log("🦅 Agentic OS v5.0 Kernel Initializing...");
 
-        // Initialize Security Pipeline
+        // Initialize Security Pipeline (Phase 3)
         this.gate = new SecurityGate();
         this.sandbox = new SandboxRuntime(this.projectRoot);
         this.logger = new ForensicLogger(this.projectRoot);
 
+        // Initialize Memory Pipeline (Phase 3.1)
+        this.retrieval = new RetrievalService(this.projectRoot);
+        this.ingestPipeline = new IngestPipeline({ projectRoot: this.projectRoot });
+        this.planningGate = new PlanningGate(this.retrieval);
+        this.compactor = new ContextCompactor(this.retrieval);
+
         console.log("🛡️ Phase 3 Security Pipeline: ARMED");
+        console.log("🧠 Phase 3.1 Memory Pipeline: ARMED");
     }
 
     public async boot() {
@@ -65,8 +86,23 @@ class Orchestrator {
     }
 
     private async loadContext() {
-        console.log("🧠 Loading Long-Term Memory (ADRs)...");
-        // TODO: Implement ADR Loader
+        console.log("🧠 Loading Long-Term Memory (Constitution + ADRs)...");
+
+        // Ingest institutional documents into vector store
+        const { chunks, result } = await this.ingestPipeline.ingest();
+
+        if (chunks.length > 0) {
+            const ingested = this.retrieval.ingestChunks(chunks, 'architect');
+            console.log(`🧠 Memory loaded: ${ingested} knowledge chunks indexed.`);
+        } else if (result.skippedUnchanged > 0) {
+            console.log(`🧠 Memory up-to-date: ${result.skippedUnchanged} documents unchanged.`);
+        } else {
+            console.warn('⚠️ No institutional documents found for indexing.');
+        }
+
+        // Log memory stats
+        const stats = this.retrieval.getStats();
+        console.log(`📊 Knowledge Base: ${stats.totalChunks} chunks | Sources: ${JSON.stringify(stats.bySourceType)}`);
     }
 
     private seedInitialGraph() {
@@ -123,6 +159,45 @@ class Orchestrator {
     private async dispatch(task: TaskNode) {
         console.log(`🚀 Dispatching Task [${task.id}] to Agent [${task.agent}]...`);
         task.status = 'RUNNING';
+
+        // ── Phase 3.1: Planning Gate (Memory Consultation) ──
+
+        if (task.type === 'PLAN') {
+            const memoryResult = this.planningGate.quickConsult(
+                task.payload,
+                task.agent as AgentRole,
+            );
+
+            if (memoryResult.decision === 'INTERRUPT') {
+                console.error(`🚨 Task [${task.id}] INTERRUPTED: ${memoryResult.reason}`);
+                console.error(`   Contradictions: ${memoryResult.contradictions.map(c => c.proposed).join(', ')}`);
+                task.status = 'FAILED';
+
+                this.logger.record({
+                    agent_id: task.agent,
+                    trigger_event: `Task ${task.id} planning gate`,
+                    context_snapshot: JSON.stringify(task.payload),
+                    chain_of_thought: `Planning Gate INTERRUPT: ${memoryResult.reason}. Contradictions: ${JSON.stringify(memoryResult.contradictions)}`,
+                    action_type: 'PLAN_DECISION',
+                    action_payload: { ...task.payload, contradictions: memoryResult.contradictions },
+                    outcome: 'BLOCKED',
+                    governance_check_ref: 'PLANNING_GATE',
+                });
+
+                this.recordSessionEvent(task.agent, 'BLOCKED', `Planning Gate: ${memoryResult.reason}`);
+                return;
+            }
+
+            // Inject retrieved context into payload for the agent
+            if (memoryResult.decision === 'PROCEED_WITH_CONTEXT') {
+                task.payload = {
+                    ...task.payload,
+                    institutional_context: memoryResult.retrievedContext,
+                    mandatory_constraints: memoryResult.mandatoryConstraints,
+                };
+                console.log(`🧠 Context injected: ${memoryResult.precedents.totalMatches} precedent(s), ${memoryResult.mandatoryConstraints.length} constraint(s)`);
+            }
+        }
 
         // ── Phase 3: Security Pipeline ──
 
@@ -232,10 +307,36 @@ class Orchestrator {
                 return `console.error('Unknown task type: ${task.type}');process.exit(1);`;
         }
     }
+
+    /**
+     * Records a session event for later compaction.
+     */
+    private recordSessionEvent(agent: string, action: string, detail: string): void {
+        this.sessionEvents.push({
+            timestamp: new Date().toISOString(),
+            agent,
+            action,
+            detail,
+        });
+    }
+
+    /**
+     * Compacts the current session's events into institutional memory.
+     * Called at system shutdown.
+     */
+    public async compactSession(): Promise<void> {
+        if (this.sessionEvents.length === 0) return;
+
+        this.compactor.compact({
+            sessionId: this.logger.getSessionId(),
+            events: this.sessionEvents,
+            writerRole: 'architect',
+        });
+    }
 }
 
 // Bootstrap
 if (require.main === module) {
     const kernel = new Orchestrator();
-    kernel.boot();
+    kernel.boot().then(() => kernel.compactSession());
 }

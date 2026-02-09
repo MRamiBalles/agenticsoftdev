@@ -35,7 +35,18 @@ Security risks are treated as **Critical Architectural Debt**.
 *   **High Vulnerability**: +100 ATDI (Block).
 *   **Medium Vulnerability**: +50 ATDI (Warning).
 
-## 5. Phase 3 Architecture: Security Pipeline
+## 5. Phase 3.1: Memory Poisoning Defense (Protocolo Mnemosyne)
+
+| Threat | Defense Layer | Implementation |
+| :--- | :--- | :--- |
+| **Memory Poisoning (false precedents)** | **RBAC Write Control** | Builder/Guardian are READ-ONLY on `knowledge_vectors`. Only Architect/Strategist/Human can write. |
+| **Stale/Deprecated Decisions** | **Status Filtering** | Deprecated ADRs excluded from search results at both application and DB (RLS) level. |
+| **Context Rot (noise accumulation)** | **Context Compactor** | `context-compactor.ts` summarizes sessions into high-signal chunks, discarding raw logs. |
+| **Architectural Drift (re-litigation)** | **Planning Gate** | `planning-gate.ts` mandates pre-plan RAG consultation. Contradictions trigger INTERRUPT. |
+| **Document Tampering** | **Hash Verification** | `source_hash` (SHA-256) stored per chunk; re-ingestion detects changes. |
+| **Prompt Injection via Memory** | **Input Sanitizer** | All retrieved chunks pass through `sanitizeInput()` before prompt injection. |
+
+## 6. Phase 3 Architecture: Security Pipeline
 
 ```
 Task → SecurityGate.validate() → SandboxRuntime.execute() → ForensicLogger.record()
@@ -48,4 +59,23 @@ Task → SecurityGate.validate() → SandboxRuntime.execute() → ForensicLogger
                                     └─ 30s timeout
 ```
 
-*Policy: "Security is not a feature; it is a constraint."*
+## 7. Phase 3.1 Architecture: Memory Pipeline
+
+```
+Boot → IngestPipeline.ingest() → SemanticChunker → LocalEmbedding → RetrievalService
+         │                          │                    │                │
+         ├─ constitution.md         ├─ Section-based     ├─ TF-IDF 384d   ├─ Cosine similarity
+         ├─ docs/adr/*.md           ├─ Facet extraction   ├─ Sovereign     ├─ RBAC enforcement
+         └─ docs/decisions/*.md     ├─ Domain detection   └─ No external   ├─ Deprecated filter
+                                    └─ Impact scoring        API calls    └─ Context assembly
+
+Dispatch (PLAN) → PlanningGate.quickConsult() → Contradiction Detection → Context Injection
+                    │                              │                        │
+                    ├─ Keyword extraction           ├─ Tech mandate check    ├─ institutional_context
+                    ├─ RAG query                    ├─ Prohibition check     └─ mandatory_constraints
+                    └─ Constraint extraction         └─ INTERRUPT on critical
+
+Shutdown → ContextCompactor.compact() → Session Summary → RetrievalService.ingestChunks()
+```
+
+*Policy: "Security is not a feature; it is a constraint. Memory is not a luxury; it is a necessity."*

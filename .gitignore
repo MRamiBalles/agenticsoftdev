@@ -26,3 +26,7 @@ dist-ssr
 # Phase 3: Security & Isolation
 .sandbox-tmp/
 .ai/audit/ledger.jsonl
+
+# Phase 3.1: RAG Memory (Mnemosyne)
+.ai/knowledge_base/vectors.json
+.ai/knowledge_base/ingest_state.json
