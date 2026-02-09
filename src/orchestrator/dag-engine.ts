@@ -713,27 +713,36 @@ export class DAGEngine {
                         const reactiveMutation = controller.generateReactiveMutation(task, graph);
                         if (reactiveMutation) {
                             const { spawnRequests: reactiveSpawns, event } = reactiveMutation;
-                            const mutationResult = controller.evaluate(reactiveSpawns, task, graph);
 
-                            for (const req of mutationResult.accepted) {
-                                const childTask: DAGTask = {
-                                    id: req.id,
-                                    type: req.type,
-                                    agent: req.agent,
-                                    dependencies: req.dependencies && req.dependencies.length > 0 ? req.dependencies : [],
-                                    payload: { ...req.payload },
-                                    status: 'PENDING',
-                                    retryCount: 0,
-                                    depth: task.depth + 1,
-                                    parentId: task.id,
-                                };
-                                graph.tasks.set(req.id, childTask);
-                                spawned++;
-                                console.log(`⚡ Reactive spawn [${req.id}] (${req.type}) from Guardian rejection of [${task.id}]`);
-                                this.callbacks.onSpawn?.(task, childTask);
+                            // Process spawns sequentially so earlier spawns are in the graph
+                            // when later spawns' dependencies are validated
+                            for (const req of reactiveSpawns) {
+                                const singleResult = controller.evaluate([req], task, graph);
+                                if (singleResult.accepted.length > 0) {
+                                    const childTask: DAGTask = {
+                                        id: req.id,
+                                        type: req.type,
+                                        agent: req.agent,
+                                        dependencies: req.dependencies && req.dependencies.length > 0 ? req.dependencies : [],
+                                        payload: { ...req.payload },
+                                        status: 'PENDING',
+                                        retryCount: 0,
+                                        depth: task.depth + 1,
+                                        parentId: task.id,
+                                    };
+                                    graph.tasks.set(req.id, childTask);
+                                    spawned++;
+                                    console.log(`⚡ Reactive spawn [${req.id}] (${req.type}) from Guardian rejection of [${task.id}]`);
+                                    this.callbacks.onSpawn?.(task, childTask);
+                                } else {
+                                    for (const { request, reason } of singleResult.rejected) {
+                                        console.warn(`🚫 Reactive spawn [${request.id}] rejected: ${reason}`);
+                                        this.callbacks.onSpawnRejected?.(task, request, reason);
+                                    }
+                                }
                             }
 
-                            if (mutationResult.accepted.length > 0) {
+                            if (spawned > 0) {
                                 console.log(`🧠 Reactive Mutation: injected ${event.injectedNodes.length} recovery nodes for [${task.id}]`);
                             }
                         } else {

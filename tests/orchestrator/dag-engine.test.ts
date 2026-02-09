@@ -700,3 +700,328 @@ describe('MutationController', () => {
         expect(result.rejected).toHaveLength(2);
     });
 });
+
+// ─── RBAC Validation Tests ───
+
+describe('MutationController - RBAC Enforcement', () => {
+    it('should reject builder spawning AUDIT task (lacks AUDIT permission)', () => {
+        const controller = new MutationController({ enforceRBAC: true });
+        const graph = DAGEngine.buildGraph([
+            { id: 'build-1', type: 'CODE', agent: 'builder' },
+        ]);
+        const parent = graph.tasks.get('build-1')!;
+        parent.status = 'COMPLETED';
+
+        const result = controller.evaluate(
+            [{ id: 'audit-child', type: 'AUDIT', agent: 'builder' }],
+            parent,
+            graph,
+        );
+
+        expect(result.rejected).toHaveLength(1);
+        expect(result.rejected[0].reason).toContain('RBAC_DENIED');
+        expect(result.rejected[0].reason).toContain('AUDIT');
+        expect(result.accepted).toHaveLength(0);
+    });
+
+    it('should allow guardian to delegate RESEARCH to researcher', () => {
+        const controller = new MutationController({ enforceRBAC: true });
+        const graph = DAGEngine.buildGraph([
+            { id: 'audit-1', type: 'AUDIT', agent: 'guardian' },
+        ]);
+        const parent = graph.tasks.get('audit-1')!;
+        parent.status = 'COMPLETED';
+
+        const result = controller.evaluate(
+            [{ id: 'research-child', type: 'RESEARCH', agent: 'researcher' }],
+            parent,
+            graph,
+        );
+
+        // Guardian lacks WEB_SEARCH, but researcher has it → delegation allowed
+        expect(result.accepted).toHaveLength(1);
+        expect(result.rejected).toHaveLength(0);
+    });
+
+    it('should reject guardian spawning CODE task targeting designer (neither has FILE_WRITE… wait designer does)', () => {
+        // Designer has FILE_WRITE, so delegation should be allowed
+        const controller = new MutationController({ enforceRBAC: true });
+        const graph = DAGEngine.buildGraph([
+            { id: 'audit-1', type: 'AUDIT', agent: 'guardian' },
+        ]);
+        const parent = graph.tasks.get('audit-1')!;
+        parent.status = 'COMPLETED';
+
+        const result = controller.evaluate(
+            [{ id: 'code-child', type: 'CODE', agent: 'designer' }],
+            parent,
+            graph,
+        );
+
+        // Guardian lacks FILE_WRITE, but designer has it → delegation allowed
+        expect(result.accepted).toHaveLength(1);
+        expect(result.rejected).toHaveLength(0);
+    });
+
+    it('should reject researcher spawning DEPLOY (neither researcher nor target has DOCKER_CONTROL)', () => {
+        const controller = new MutationController({ enforceRBAC: true });
+        const graph = DAGEngine.buildGraph([
+            { id: 'research-1', type: 'RESEARCH', agent: 'researcher' },
+        ]);
+        const parent = graph.tasks.get('research-1')!;
+        parent.status = 'COMPLETED';
+
+        const result = controller.evaluate(
+            [{ id: 'deploy-child', type: 'DEPLOY', agent: 'builder' }],
+            parent,
+            graph,
+        );
+
+        // researcher: no DOCKER_CONTROL, builder: no DOCKER_CONTROL → rejected
+        expect(result.rejected).toHaveLength(1);
+        expect(result.rejected[0].reason).toContain('RBAC_DENIED');
+        expect(result.rejected[0].reason).toContain('DOCKER_CONTROL');
+    });
+
+    it('should allow architect to spawn PLAN tasks directly (has PLAN_DECISION)', () => {
+        const controller = new MutationController({ enforceRBAC: true });
+        const graph = DAGEngine.buildGraph([
+            { id: 'plan-1', type: 'PLAN', agent: 'architect' },
+        ]);
+        const parent = graph.tasks.get('plan-1')!;
+        parent.status = 'COMPLETED';
+
+        const result = controller.evaluate(
+            [{ id: 'replan', type: 'PLAN', agent: 'architect' }],
+            parent,
+            graph,
+        );
+
+        expect(result.accepted).toHaveLength(1);
+        expect(result.rejected).toHaveLength(0);
+    });
+
+    it('should allow devops to spawn DEPLOY and INFRA_PROVISION (has DOCKER_CONTROL)', () => {
+        const controller = new MutationController({ enforceRBAC: true });
+        const graph = DAGEngine.buildGraph([
+            { id: 'infra-1', type: 'INFRA_PROVISION', agent: 'devops' },
+        ]);
+        const parent = graph.tasks.get('infra-1')!;
+        parent.status = 'COMPLETED';
+
+        const result = controller.evaluate(
+            [
+                { id: 'deploy-child', type: 'DEPLOY', agent: 'devops' },
+                { id: 'infra-child', type: 'INFRA_PROVISION', agent: 'devops' },
+            ],
+            parent,
+            graph,
+        );
+
+        expect(result.accepted).toHaveLength(2);
+        expect(result.rejected).toHaveLength(0);
+    });
+
+    it('should reject unknown agent role with RBAC_UNKNOWN_ROLE', () => {
+        const controller = new MutationController({ enforceRBAC: true });
+        const graph = DAGEngine.buildGraph([
+            { id: 'task-1', type: 'CODE', agent: 'unknown_agent' as any },
+        ]);
+        const parent = graph.tasks.get('task-1')!;
+        parent.status = 'COMPLETED';
+
+        const result = controller.evaluate(
+            [{ id: 'child', type: 'CODE', agent: 'builder' }],
+            parent,
+            graph,
+        );
+
+        expect(result.rejected).toHaveLength(1);
+        expect(result.rejected[0].reason).toContain('RBAC_UNKNOWN_ROLE');
+    });
+
+    it('should skip RBAC when enforceRBAC is false', () => {
+        const controller = new MutationController({ enforceRBAC: false });
+        const graph = DAGEngine.buildGraph([
+            { id: 'audit-1', type: 'AUDIT', agent: 'guardian' },
+        ]);
+        const parent = graph.tasks.get('audit-1')!;
+        parent.status = 'COMPLETED';
+
+        // Guardian spawning DEPLOY without DOCKER_CONTROL — normally rejected
+        const result = controller.evaluate(
+            [{ id: 'deploy-child', type: 'DEPLOY', agent: 'guardian' }],
+            parent,
+            graph,
+        );
+
+        expect(result.accepted).toHaveLength(1);
+        expect(result.rejected).toHaveLength(0);
+    });
+
+    it('should use agentRoles map to resolve custom agent IDs', () => {
+        const controller = new MutationController({
+            enforceRBAC: true,
+            agentRoles: { 'agent-007': 'guardian', 'agent-builder-v2': 'builder' },
+        });
+        const graph = DAGEngine.buildGraph([
+            { id: 'task-1', type: 'AUDIT', agent: 'agent-007' },
+        ]);
+        const parent = graph.tasks.get('task-1')!;
+        parent.status = 'COMPLETED';
+
+        // agent-007 (guardian) delegating CODE to agent-builder-v2 (builder) → allowed
+        const result = controller.evaluate(
+            [{ id: 'code-child', type: 'CODE', agent: 'agent-builder-v2' }],
+            parent,
+            graph,
+        );
+
+        expect(result.accepted).toHaveLength(1);
+    });
+});
+
+// ─── Reactive Mutation Tests ───
+
+describe('MutationController - Reactive Mutation', () => {
+    it('should generate RESEARCH + RE-PLAN nodes on AUDIT task failure', () => {
+        const controller = new MutationController({ enableReactiveMutation: true });
+        const graph = DAGEngine.buildGraph([
+            { id: 'audit-vuln', type: 'AUDIT', agent: 'guardian' },
+        ]);
+        const failedTask = graph.tasks.get('audit-vuln')!;
+        failedTask.status = 'FAILED';
+        failedTask.result = { exitCode: 1, stdout: '', stderr: 'Vulnerability CVE-2026-1234 in lodash', durationMs: 100 };
+
+        const mutation = controller.generateReactiveMutation(failedTask, graph);
+
+        expect(mutation).not.toBeNull();
+        expect(mutation!.spawnRequests).toHaveLength(2);
+        expect(mutation!.spawnRequests[0].type).toBe('RESEARCH');
+        expect(mutation!.spawnRequests[0].agent).toBe('researcher');
+        expect(mutation!.spawnRequests[1].type).toBe('PLAN');
+        expect(mutation!.spawnRequests[1].agent).toBe('architect');
+        // RE-PLAN depends on RESEARCH
+        expect(mutation!.spawnRequests[1].dependencies).toContain(mutation!.spawnRequests[0].id);
+        // Event has correct metadata
+        expect(mutation!.event.failedTaskId).toBe('audit-vuln');
+        expect(mutation!.event.reason).toContain('CVE-2026-1234');
+        expect(mutation!.event.injectedNodes).toHaveLength(2);
+    });
+
+    it('should generate reactive mutation for REVIEW tasks too', () => {
+        const controller = new MutationController({ enableReactiveMutation: true });
+        const graph = DAGEngine.buildGraph([
+            { id: 'review-1', type: 'REVIEW', agent: 'guardian' },
+        ]);
+        const failedTask = graph.tasks.get('review-1')!;
+        failedTask.status = 'FAILED';
+        failedTask.result = { exitCode: 1, stdout: '', stderr: 'Code review rejected: insecure pattern', durationMs: 50 };
+
+        const mutation = controller.generateReactiveMutation(failedTask, graph);
+        expect(mutation).not.toBeNull();
+        expect(mutation!.spawnRequests).toHaveLength(2);
+    });
+
+    it('should NOT generate reactive mutation for CODE tasks', () => {
+        const controller = new MutationController({ enableReactiveMutation: true });
+        const graph = DAGEngine.buildGraph([
+            { id: 'code-1', type: 'CODE', agent: 'builder' },
+        ]);
+        const failedTask = graph.tasks.get('code-1')!;
+        failedTask.status = 'FAILED';
+        failedTask.result = { exitCode: 1, stdout: '', stderr: 'Compile error', durationMs: 50 };
+
+        const mutation = controller.generateReactiveMutation(failedTask, graph);
+        expect(mutation).toBeNull();
+    });
+
+    it('should NOT generate reactive mutation when disabled', () => {
+        const controller = new MutationController({ enableReactiveMutation: false });
+        const graph = DAGEngine.buildGraph([
+            { id: 'audit-1', type: 'AUDIT', agent: 'guardian' },
+        ]);
+        const failedTask = graph.tasks.get('audit-1')!;
+        failedTask.status = 'FAILED';
+        failedTask.result = { exitCode: 1, stdout: '', stderr: 'Rejected', durationMs: 50 };
+
+        const mutation = controller.generateReactiveMutation(failedTask, graph);
+        expect(mutation).toBeNull();
+    });
+
+    it('should NOT generate reactive mutation when at max depth', () => {
+        const controller = new MutationController({ enableReactiveMutation: true, maxDepth: 2 });
+        const graph = DAGEngine.buildGraph([
+            { id: 'audit-deep', type: 'AUDIT', agent: 'guardian' },
+        ]);
+        const failedTask = graph.tasks.get('audit-deep')!;
+        failedTask.depth = 2; // Already at max depth
+        failedTask.status = 'FAILED';
+        failedTask.result = { exitCode: 1, stdout: '', stderr: 'Rejected', durationMs: 50 };
+
+        const mutation = controller.generateReactiveMutation(failedTask, graph);
+        expect(mutation).toBeNull();
+    });
+
+    it('should inject reactive context into spawned task payloads', () => {
+        const controller = new MutationController({ enableReactiveMutation: true });
+        const graph = DAGEngine.buildGraph([
+            { id: 'audit-ctx', type: 'AUDIT', agent: 'guardian' },
+        ]);
+        const failedTask = graph.tasks.get('audit-ctx')!;
+        failedTask.status = 'FAILED';
+        failedTask.result = { exitCode: 1, stdout: '', stderr: 'Insecure dependency detected', durationMs: 50 };
+
+        const mutation = controller.generateReactiveMutation(failedTask, graph);
+        const researchPayload = mutation!.spawnRequests[0].payload as any;
+
+        expect(researchPayload._reactiveContext).toBeDefined();
+        expect(researchPayload._reactiveContext.trigger).toBe('GUARDIAN_REJECTION');
+        expect(researchPayload._reactiveContext.failedTaskId).toBe('audit-ctx');
+        expect(researchPayload._reactiveContext.rejectionReason).toContain('Insecure dependency');
+    });
+
+    it('should integrate with executeMutating: Guardian failure triggers reactive spawn', async () => {
+        const engine = new DAGEngine(
+            { maxConcurrency: 3, tickIntervalMs: 10, maxExecutionTimeMs: 5000 },
+            new RetryPolicy({ maxRetries: { PLAN: 0, CODE: 0, AUDIT: 0, TEST: 0, REVIEW: 0, DEPLOY: 0, RESEARCH: 0, DESIGN: 0, INFRA_PROVISION: 0 } }),
+        );
+
+        const graph = DAGEngine.buildGraph([
+            { id: 'code-1', type: 'CODE', agent: 'builder' },
+            { id: 'audit-1', type: 'AUDIT', agent: 'guardian', dependencies: ['code-1'] },
+        ]);
+
+        const executedTasks: string[] = [];
+
+        const dispatcher = async (task: DAGTask): Promise<TaskDispatchResult> => {
+            executedTasks.push(task.id);
+            await new Promise(r => setTimeout(r, 5));
+
+            if (task.id === 'audit-1') {
+                return {
+                    result: { exitCode: 1, stdout: '', stderr: 'Vulnerable library detected', durationMs: 5 },
+                };
+            }
+
+            return {
+                result: { exitCode: 0, stdout: `Done: ${task.id}`, stderr: '', durationMs: 5 },
+            };
+        };
+
+        const result = await engine.executeMutating(graph, dispatcher, { enableReactiveMutation: true, enforceRBAC: false });
+
+        // code-1 completed, audit-1 failed, reactive RESEARCH + RE-PLAN spawned and executed
+        expect(result.spawned).toBeGreaterThanOrEqual(2);
+        expect(executedTasks).toContain('code-1');
+        expect(executedTasks).toContain('audit-1');
+
+        // Verify reactive nodes were actually added to the graph
+        const reactiveResearch = Array.from(graph.tasks.values()).find(t => t.type === 'RESEARCH' && t.id.startsWith('reactive-'));
+        const reactivePlan = Array.from(graph.tasks.values()).find(t => t.type === 'PLAN' && t.id.startsWith('reactive-'));
+        expect(reactiveResearch).toBeDefined();
+        expect(reactivePlan).toBeDefined();
+        expect(reactiveResearch!.parentId).toBe('audit-1');
+        expect(reactivePlan!.parentId).toBe('audit-1');
+    });
+});
