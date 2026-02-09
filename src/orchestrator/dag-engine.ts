@@ -16,6 +16,7 @@
 
 import { RetryPolicy, TaskType } from './retry-policy';
 import type { AgentMessage, AgentMailbox } from './agent-bus';
+import { AgentRole, ROLE_PERMISSIONS, TASK_PERMISSION_MAP, Permission } from './security-gate';
 
 // ─── Types ───
 
@@ -106,12 +107,24 @@ export interface MutationPolicy {
     maxGraphSize: number;
     /** Whether to validate RBAC on spawn requests */
     enforceRBAC: boolean;
+    /** Whether to enable reactive mutation (auto-insert RESEARCH + RE-PLAN on Guardian rejection) */
+    enableReactiveMutation: boolean;
+    /** Agent role map: agentId → AgentRole (used for RBAC validation) */
+    agentRoles?: Record<string, AgentRole>;
 }
 
 /** Result of a mutation validation */
 export interface MutationResult {
     accepted: SpawnRequest[];
     rejected: { request: SpawnRequest; reason: string }[];
+}
+
+/** Reactive mutation event emitted when the engine auto-inserts recovery nodes */
+export interface ReactiveMutationEvent {
+    failedTaskId: string;
+    failedAgent: string;
+    reason: string;
+    injectedNodes: string[];
 }
 
 /** Callback invoked by the engine for each task lifecycle event */
@@ -137,6 +150,8 @@ export interface DAGEngineCallbacks {
     onSpawnRejected?: (parent: DAGTask, request: SpawnRequest, reason: string) => void;
     /** Called when a message is published via the bus */
     onMessage?: (task: DAGTask, message: AgentMessage) => void;
+    /** Called when reactive mutation injects recovery nodes */
+    onReactiveMutation?: (event: ReactiveMutationEvent) => void;
 }
 
 // ─── Default Config ───
@@ -693,7 +708,37 @@ export class DAGEngine {
                     } else {
                         task.status = 'FAILED';
                         console.error(`❌ Task [${task.id}] FAILED permanently: ${decision.reason}`);
-                        this.skipDependents(task.id, graph);
+
+                        // ── Reactive Mutation: Auto-inject RESEARCH + RE-PLAN on Guardian rejection ──
+                        const reactiveMutation = controller.generateReactiveMutation(task, graph);
+                        if (reactiveMutation) {
+                            const { spawnRequests: reactiveSpawns, event } = reactiveMutation;
+                            const mutationResult = controller.evaluate(reactiveSpawns, task, graph);
+
+                            for (const req of mutationResult.accepted) {
+                                const childTask: DAGTask = {
+                                    id: req.id,
+                                    type: req.type,
+                                    agent: req.agent,
+                                    dependencies: req.dependencies && req.dependencies.length > 0 ? req.dependencies : [],
+                                    payload: { ...req.payload },
+                                    status: 'PENDING',
+                                    retryCount: 0,
+                                    depth: task.depth + 1,
+                                    parentId: task.id,
+                                };
+                                graph.tasks.set(req.id, childTask);
+                                spawned++;
+                                console.log(`⚡ Reactive spawn [${req.id}] (${req.type}) from Guardian rejection of [${task.id}]`);
+                                this.callbacks.onSpawn?.(task, childTask);
+                            }
+
+                            if (mutationResult.accepted.length > 0) {
+                                console.log(`🧠 Reactive Mutation: injected ${event.injectedNodes.length} recovery nodes for [${task.id}]`);
+                            }
+                        } else {
+                            this.skipDependents(task.id, graph);
+                        }
                     }
                 }
             } catch (error) {
@@ -752,6 +797,7 @@ const DEFAULT_MUTATION_POLICY: MutationPolicy = {
     maxDepth: 3,
     maxGraphSize: 50,
     enforceRBAC: true,
+    enableReactiveMutation: true,
 };
 
 export class MutationController {
@@ -763,7 +809,7 @@ export class MutationController {
 
     /**
      * Evaluates spawn requests against the mutation policy.
-     * Validates depth, graph size, duplicate IDs, dependency existence, and cycles.
+     * Validates depth, graph size, duplicate IDs, dependency existence, RBAC, and cycles.
      */
     public evaluate(
         requests: SpawnRequest[],
@@ -783,6 +829,71 @@ export class MutationController {
         }
 
         return { accepted, rejected };
+    }
+
+    /**
+     * Generates reactive mutation spawn requests when a Guardian/AUDIT task fails.
+     * Inserts RESEARCH (find alternative) → RE-PLAN nodes automatically.
+     */
+    public generateReactiveMutation(
+        failedTask: DAGTask,
+        graph: DAGGraph,
+    ): { spawnRequests: SpawnRequest[]; event: ReactiveMutationEvent } | null {
+        if (!this.policy.enableReactiveMutation) return null;
+
+        // Only trigger for AUDIT/REVIEW tasks (Guardian rejection pattern)
+        if (failedTask.type !== 'AUDIT' && failedTask.type !== 'REVIEW') return null;
+
+        // Don't trigger if already at max depth
+        if (failedTask.depth + 1 > this.policy.maxDepth) {
+            console.warn(`🚫 Reactive mutation skipped for [${failedTask.id}]: depth limit reached`);
+            return null;
+        }
+
+        const researchId = `reactive-research-${failedTask.id}-${Date.now()}`;
+        const replanId = `reactive-replan-${failedTask.id}-${Date.now()}`;
+
+        const errorContext = failedTask.result?.stderr || 'Unknown rejection reason';
+
+        const spawnRequests: SpawnRequest[] = [
+            {
+                id: researchId,
+                type: 'RESEARCH',
+                agent: 'researcher',
+                dependencies: [], // No deps — can start immediately
+                payload: {
+                    _reactiveContext: {
+                        trigger: 'GUARDIAN_REJECTION',
+                        failedTaskId: failedTask.id,
+                        failedAgent: failedTask.agent,
+                        rejectionReason: errorContext.slice(0, 500),
+                        instruction: 'Find an alternative approach or library that resolves the Guardian rejection. Focus on security and compatibility.',
+                    },
+                },
+            },
+            {
+                id: replanId,
+                type: 'PLAN',
+                agent: 'architect',
+                dependencies: [researchId], // Wait for research results
+                payload: {
+                    _reactiveContext: {
+                        trigger: 'GUARDIAN_REJECTION',
+                        failedTaskId: failedTask.id,
+                        instruction: 'Re-plan the rejected task using the research findings. Produce a revised approach that satisfies Guardian constraints.',
+                    },
+                },
+            },
+        ];
+
+        const event: ReactiveMutationEvent = {
+            failedTaskId: failedTask.id,
+            failedAgent: failedTask.agent,
+            reason: errorContext.slice(0, 200),
+            injectedNodes: [researchId, replanId],
+        };
+
+        return { spawnRequests, event };
     }
 
     public getPolicy(): MutationPolicy {
@@ -818,13 +929,63 @@ export class MutationController {
             }
         }
 
-        // Check 5: Simulate cycle detection with the new task added
+        // Check 5: RBAC — validate spawning agent has permission for the spawned task type
+        if (this.policy.enforceRBAC) {
+            const rbacRejection = this.validateRBAC(req, parent);
+            if (rbacRejection) return rbacRejection;
+        }
+
+        // Check 6: Simulate cycle detection with the new task added
         const simGraph = this.simulateGraph(graph, req, parent);
         if (this.hasCycle(simGraph)) {
             return `CYCLE_DETECTED: adding [${req.id}] would create a cycle (Art. III.1)`;
         }
 
         return null;
+    }
+
+    /**
+     * RBAC validation: Ensures the spawning agent's role permits creating the requested task type.
+     * 
+     * Rules:
+     * 1. The spawning agent must have a known role (via agentRoles map or DAGTask.agent field).
+     * 2. The spawned task type must map to a permission the spawning agent possesses,
+     *    OR the target agent must have the required permission (delegation pattern).
+     */
+    private validateRBAC(req: SpawnRequest, parent: DAGTask): string | null {
+        const agentRoles = this.policy.agentRoles ?? {};
+
+        // Resolve the parent agent's role
+        const parentRole = agentRoles[parent.agent] ?? (parent.agent as AgentRole);
+        const parentPermissions = ROLE_PERMISSIONS[parentRole];
+
+        if (!parentPermissions) {
+            return `RBAC_UNKNOWN_ROLE: spawning agent [${parent.agent}] has unknown role [${parentRole}]`;
+        }
+
+        // Resolve required permission for the spawned task type
+        const requiredPermission = TASK_PERMISSION_MAP[req.type] as Permission | undefined;
+
+        if (!requiredPermission) {
+            // No permission mapping for this task type — allow (unknown types are unrestricted)
+            return null;
+        }
+
+        // Check 1: Does the parent agent have the permission directly?
+        if (parentPermissions.includes(requiredPermission)) {
+            return null; // Allowed: parent can perform this type of work
+        }
+
+        // Check 2: Delegation — does the TARGET agent have the required permission?
+        const targetRole = agentRoles[req.agent] ?? (req.agent as AgentRole);
+        const targetPermissions = ROLE_PERMISSIONS[targetRole];
+
+        if (targetPermissions && targetPermissions.includes(requiredPermission)) {
+            // Delegation allowed: parent is delegating to an agent that CAN do this work
+            return null;
+        }
+
+        return `RBAC_DENIED: agent [${parent.agent}] (role: ${parentRole}) cannot spawn task type [${req.type}] requiring [${requiredPermission}]. Target agent [${req.agent}] (role: ${targetRole}) also lacks permission.`;
     }
 
     /** Creates a temporary graph with the proposed task for cycle checking */

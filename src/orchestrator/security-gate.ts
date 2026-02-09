@@ -18,7 +18,7 @@ import { sanitizeInput, validateCommand, sanitizeOutput, SanitizeResult } from '
 export type AgentRole = 'architect' | 'builder' | 'guardian' | 'strategist' | 'researcher' | 'devops' | 'designer';
 export type Permission = 'PLAN_DECISION' | 'FILE_WRITE' | 'SHELL_EXEC' | 'READ_ONLY' | 'AUDIT' | 'WEB_SEARCH' | 'NETWORK_OUTBOUND' | 'DOCKER_CONTROL';
 
-const ROLE_PERMISSIONS: Record<AgentRole, Permission[]> = {
+export const ROLE_PERMISSIONS: Record<AgentRole, Permission[]> = {
     architect: ['PLAN_DECISION', 'READ_ONLY'],
     builder: ['FILE_WRITE', 'SHELL_EXEC', 'READ_ONLY'],
     guardian: ['READ_ONLY', 'AUDIT'],
@@ -29,7 +29,7 @@ const ROLE_PERMISSIONS: Record<AgentRole, Permission[]> = {
 };
 
 // Map task types to required permissions
-const TASK_PERMISSION_MAP: Record<string, Permission> = {
+export const TASK_PERMISSION_MAP: Record<string, Permission> = {
     'PLAN': 'PLAN_DECISION',
     'CODE': 'FILE_WRITE',
     'AUDIT': 'AUDIT',
