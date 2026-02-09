@@ -150,7 +150,18 @@ export default function MissionControl() {
                             <TimelineFeed events={timelineEvents} />
                         </div>
                         <div>
-                            <RaciCard task={pendingTasks[0]} />
+                            {pendingTasks[0] && (
+                                <RaciCard
+                                    taskId={pendingTasks[0].id}
+                                    taskTitle={pendingTasks[0].task_id}
+                                    responsibleAgent={pendingTasks[0].responsible_agent_id}
+                                    accountableHumanId={pendingTasks[0].accountable_user_id}
+                                    accountableHumanName="Commander"
+                                    currentUserId="user-123"
+                                    atdiScore={pendingTasks[0].atdiScore}
+                                    riskFactors={pendingTasks[0].riskFactors}
+                                />
+                            )}
                         </div>
                     </div>
                 </TabsContent>
