@@ -305,4 +305,42 @@ DAGEngine execution
          └─ Sequential indices for forensic ordering
 ```
 
+## 20. Phase 4.6: Distributed Execution Risks
+
+| Threat | Defense Layer | Implementation |
+| :--- | :--- | :--- |
+| **Rogue Worker (malicious node)** | **Capability Registration** | Workers declare capabilities at registration. Tasks only dispatched to capable workers. |
+| **Worker Death Mid-Task** | **Heartbeat + Failover** | Workers send heartbeats every 5s. 3 misses → DEAD. Tasks re-dispatched to healthy worker (max 2 failover attempts). |
+| **Dispatch Timeout (hung worker)** | **Per-Task Timeout** | Default 30s timeout per dispatch. Timeout → failover to different worker. |
+| **Fork Bomb (worker overload)** | **Concurrency Cap** | `maxConcurrency` per worker. Workers at capacity excluded from candidate pool. |
+| **Stale Worker State** | **DRAINING Protocol** | Workers set to DRAINING finish current tasks but accept no new ones. Clean lifecycle transitions. |
+| **Failover Amplification** | **Attempt Limit** | Max 2 failover attempts per task. Exhausted → null result (task fails cleanly). |
+| **Worker Impersonation** | **Registry Control** | Only the orchestrator registers workers. No self-registration from untrusted sources. |
+| **Load Imbalance** | **3 LB Strategies** | ROUND_ROBIN, LEAST_LOADED, CAPABILITY_MATCH. Hot-swappable at runtime. |
+
+## 21. Phase 4.6 Architecture: Distributed Execution Pipeline
+
+```
+WorkerRegistry
+    ├─ register(id, capabilities, maxConcurrency)
+    ├─ heartbeat(workerId) → updates lastHeartbeat
+    ├─ checkHeartbeats() → marks DEAD workers (3 missed @ 5s)
+    ├─ drain(workerId) → DRAINING (no new tasks)
+    └─ getCapableWorkers(taskType) → available + capable
+
+LoadBalancer
+    ├─ ROUND_ROBIN: simple rotation
+    ├─ LEAST_LOADED: fewest activeTasks / maxConcurrency
+    └─ CAPABILITY_MATCH: filter by capability → least loaded
+
+DistributedDispatcher
+    ├─ dispatch(task)
+    │    ├─ getCapableWorkers(task.type)
+    │    ├─ LoadBalancer.select(candidates)
+    │    ├─ executeWithTimeout(worker, task, 30s)
+    │    ├─ On success → DispatchResponse
+    │    └─ On failure → exclude worker → failover (max 2)
+    └─ Failover log → forensic record of all re-dispatches
+```
+
 *Policy: "Security is not a feature; it is a constraint. Memory is not a luxury; it is a necessity. Autonomy without resilience is recklessness."*
