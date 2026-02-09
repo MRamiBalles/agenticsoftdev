@@ -17,3 +17,12 @@ This handbook is for the **Future Guardian** of the Sovereign SDLC Platform. It 
 
 ## Succession
 Keep your private key safe. If you hand over the command, pass this handbook first.
+
+## Standing Orders (v4.1)
+**Authorized by Command (2026-02-08)**
+
+1.  **Weekly Health Check**: Run `sov doctor` every Monday to detect entropy.
+2.  **Constitutional Loyalty**: Trust the Governor's block. Use overrides (`SIG-HUMAN`) only in dire emergencies.
+3.  **Visual Vigilance**: If `sov status` shows Conway Friction, intervene organizationally, not just technically.
+
+*“The sovereignty is not granted, it is maintained.”*
