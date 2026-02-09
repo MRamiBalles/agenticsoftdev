@@ -224,4 +224,44 @@ TaskAuction
          └─ Tie-break by role priority (architect > strategist > builder > ...)
 ```
 
+## 16. Phase 4.4: Agent Learning & Adaptation Risks
+
+| Threat | Defense Layer | Implementation |
+| :--- | :--- | :--- |
+| **Learning Poisoning (false outcomes)** | **Outcome Integrity** | Outcomes recorded only from DAG engine callbacks (system-generated). Agents cannot self-report. |
+| **Stale Learning (concept drift)** | **Exponential Decay** | Recent outcomes weighted higher via configurable half-life (default 1h). Old data naturally fades. |
+| **Recommendation Manipulation** | **Minimum Data Threshold** | Recommendations require ≥5 outcomes. Prevents gaming from sparse data. |
+| **Runaway Adaptation (feedback loop)** | **Bounded Recommendations** | Retry suggestions capped at 0–3. Capability scores bounded 0–100. No unbounded growth. |
+| **Profile Data Explosion** | **Rolling Window** | Max 50 outcomes per agent+taskType pair. FIFO eviction. Constant memory footprint. |
+| **Opaque Adaptation Decisions** | **Full Transparency** | All recommendations include description, confidence score, and suggested value. Logged via callbacks. |
+| **Failure Pattern False Positives** | **Alert Threshold** | Failure alerts require ≥3 occurrences of same error pattern. Reduces noise. |
+| **Biased Task Routing** | **Affinity as Suggestion** | Task affinity is advisory (>80% success required). Does not override RBAC or explicit assignment. |
+
+## 17. Phase 4.4 Architecture: Learning Pipeline
+
+```
+DAGEngine callbacks (onComplete/onFail)
+    │
+    └─ OutcomeTracker.record(TaskOutcome)
+         ├─ Rolling window (max 50 per agent+taskType)
+         ├─ Exponential decay weighting (half-life: 1h)
+         └─ computeStats() → PerformanceStats
+              ├─ Success rate (weighted)
+              ├─ Avg/p95 duration
+              ├─ Retry success rate
+              └─ Error pattern frequency
+
+AdaptationEngine.recommend(agent, role)
+    ├─ RETRY_TUNE: retry success < 20% → suggest 0 retries
+    ├─ BID_CALIBRATE: capability = success_rate × 100, duration = p95
+    ├─ TASK_AFFINITY: agent excels at type (>80% success) → prioritize
+    └─ FAILURE_ALERT: error pattern ≥ 3x → flag for human review
+
+Integration Points:
+    ├─ getCalibratedCapability() → TaskAuction.bid()
+    ├─ getCalibratedDuration() → TaskAuction.bid()
+    ├─ getSuggestedRetryLimit() → RetryPolicy
+    └─ getTaskAffinity() → task routing decisions
+```
+
 *Policy: "Security is not a feature; it is a constraint. Memory is not a luxury; it is a necessity. Autonomy without resilience is recklessness."*
