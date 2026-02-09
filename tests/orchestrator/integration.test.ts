@@ -12,11 +12,12 @@
  *   Phase 4.6: WorkerRegistry + LoadBalancer
  *   Phase 4.7: FailureDetector + HealingEngine
  *   Phase 4.8: SimulationEngine (full scenario)
+ *   Phase 5:   ATDIEngine quality gate
  * 
  * These tests exercise the subsystems in concert, not in isolation.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 // Phase 3
 import { SecurityGate } from '../../src/orchestrator/security-gate';
@@ -45,6 +46,9 @@ import { FailureDetector, HealingEngine } from '../../src/orchestrator/agent-sel
 
 // Phase 4.8
 import { SimulationEngine, ScenarioRunner } from '../../src/orchestrator/simulation-sandbox';
+
+// Phase 5
+import { ATDIEngine } from '../../src/orchestrator/atdi-engine';
 
 // ─── Helpers ───
 
@@ -478,5 +482,82 @@ describe('Integration: Cross-Subsystem Event Flow', () => {
 
         // Verify checkpoint state
         expect(checkpointMgr.listCheckpoints()).toHaveLength(1);
+    });
+});
+
+// ─── Integration: ATDI Quality Gate ───
+
+describe('Integration: ATDIEngine → Deploy Gate', () => {
+    it('should allow deploy on clean codebase (GREEN)', () => {
+        const engine = new ATDIEngine();
+        const graph = { 'app.ts': ['db.ts'], 'db.ts': [] };
+        const metrics = [
+            { file: 'app.ts', loc: 100, complexity: 5, imports: ['db.ts'] },
+            { file: 'db.ts', loc: 50, complexity: 3, imports: [] },
+        ];
+
+        engine.analyze(graph, metrics);
+        const gate = engine.checkDeployGate();
+
+        expect(gate.allowed).toBe(true);
+        expect(gate.trafficLight).toBe('GREEN');
+        expect(gate.score).toBe(0);
+    });
+
+    it('should block deploy on high-debt codebase (RED)', () => {
+        const onBlocked = vi.fn();
+        const engine = new ATDIEngine({}, {}, { onDeployBlocked: onBlocked });
+
+        // Cyclic graph + bloated file
+        const graph = { 'a.ts': ['b.ts'], 'b.ts': ['a.ts'] };
+        const metrics = [
+            { file: 'a.ts', loc: 500, complexity: 25, imports: Array.from({ length: 15 }, (_, i) => `d${i}`) },
+        ];
+
+        const report = engine.analyze(graph, metrics);
+        expect(report.trafficLight).toBe('RED');
+        expect(report.blocked).toBe(true);
+        expect(onBlocked).toHaveBeenCalledTimes(1);
+
+        const gate = engine.checkDeployGate();
+        expect(gate.allowed).toBe(false);
+        expect(gate.reason).toContain('BLOCKED');
+    });
+
+    it('should warn on moderate debt (AMBER) but allow deploy', () => {
+        const engine = new ATDIEngine();
+        // Score = LOC(305-300)*1 + complexity(16-15)*5 = 5 + 5 = 10 → AMBER
+        const metrics = [{ file: 'med.ts', loc: 305, complexity: 16, imports: [] }];
+
+        engine.analyze({}, metrics);
+        const gate = engine.checkDeployGate();
+
+        expect(gate.allowed).toBe(true);
+        expect(gate.trafficLight).toBe('AMBER');
+        expect(gate.reason).toContain('warning');
+    });
+
+    it('should integrate cycle detection with DAG security flow', () => {
+        const engine = new ATDIEngine();
+        const gate = new SecurityGate();
+
+        // Analyze a cyclic codebase
+        engine.analyze(
+            { 'auth.ts': ['user.ts'], 'user.ts': ['auth.ts'] },
+            [],
+        );
+
+        // Simulate a deploy task going through both gates
+        const deployGate = engine.checkDeployGate();
+        const securityVerdict = gate.validate({
+            agentRole: 'devops',
+            taskType: 'DEPLOY',
+            payload: { target: 'staging', atdi_score: deployGate.score },
+        });
+
+        // ATDI blocks (cycle = 10 * 2 = 20 → RED)
+        expect(deployGate.allowed).toBe(false);
+        // Security gate still allows devops to DEPLOY
+        expect(securityVerdict.allowed).toBe(true);
     });
 });

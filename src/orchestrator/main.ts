@@ -15,6 +15,7 @@ import { OutcomeTracker, AdaptationEngine, TaskOutcome } from './agent-learning'
 import { CheckpointManager } from './execution-persistence';
 import { WorkerRegistry, LoadBalancer } from './distributed-executor';
 import { FailureDetector, HealingEngine } from './agent-self-healing';
+import { ATDIEngine } from './atdi-engine';
 
 /**
  * Agentic OS v5.0 - The Kernel
@@ -89,6 +90,9 @@ class Orchestrator {
     // Phase 4.7: Agent Self-Healing
     private failureDetector: FailureDetector;
     private healingEngine: HealingEngine;
+
+    // Phase 5: ATDI Quality Engine
+    private atdiEngine: ATDIEngine;
 
     constructor(projectRoot?: string) {
         this.projectRoot = projectRoot ?? path.resolve(__dirname, '..', '..');
@@ -257,6 +261,26 @@ class Orchestrator {
             },
         });
 
+        // Initialize ATDI Quality Engine (Phase 5)
+        this.atdiEngine = new ATDIEngine({}, {}, {
+            onAnalysisComplete: (report) => {
+                this.recordSessionEvent('system', 'ATDI_ANALYSIS', `Score: ${report.score} (${report.trafficLight}), ${report.smells.length} smells`);
+                this.logger.record({
+                    agent_id: 'system',
+                    trigger_event: 'ATDI analysis complete',
+                    context_snapshot: `score=${report.score} light=${report.trafficLight} smells=${report.smells.length}`,
+                    chain_of_thought: `ATDI: ${report.score} (${report.trafficLight}). ${report.smells.map(s => s.description).join('; ')}`.slice(0, 500),
+                    action_type: 'PLAN_DECISION',
+                    action_payload: { score: report.score, trafficLight: report.trafficLight, smellCount: report.smells.length, blocked: report.blocked },
+                    outcome: report.blocked ? 'BLOCKED' : 'SUCCESS',
+                });
+            },
+            onDeployBlocked: (report) => {
+                console.error(`🔴 ATDI Deploy BLOCKED: score ${report.score} (${report.trafficLight})`);
+                this.recordSessionEvent('system', 'ATDI_BLOCK', `Deploy blocked: ATDI ${report.score} >= RED threshold`);
+            },
+        });
+
         console.log("🛡️ Phase 3 Security Pipeline: ARMED");
         console.log("🧠 Phase 3.1 Memory Pipeline: ARMED");
         console.log("🕸️ Phase 4.0 DAG Engine: ARMED");
@@ -266,6 +290,7 @@ class Orchestrator {
         console.log("💾 Phase 4.5 Persistent State: ARMED");
         console.log("🌐 Phase 4.6 Distributed Execution: ARMED");
         console.log("🩹 Phase 4.7 Self-Healing: ARMED");
+        console.log("📊 Phase 5 ATDI Quality Engine: ARMED");
     }
 
     public async boot() {
@@ -422,6 +447,29 @@ class Orchestrator {
                     mandatory_constraints: memoryResult.mandatoryConstraints,
                 };
                 console.log(`🧠 Context injected: ${memoryResult.precedents.totalMatches} precedent(s)`);
+            }
+        }
+
+        // ── Phase 5: ATDI Deploy Gate ──
+        if (task.type === 'DEPLOY' || task.type === 'INFRA_PROVISION') {
+            const gate = this.atdiEngine.checkDeployGate();
+            if (!gate.allowed) {
+                console.error(`🔴 Task [${task.id}] BLOCKED by ATDI: ${gate.reason}`);
+                this.logger.record({
+                    agent_id: task.agent,
+                    trigger_event: `Task ${task.id} ATDI gate`,
+                    context_snapshot: JSON.stringify(task.payload),
+                    chain_of_thought: `ATDI Gate: ${gate.reason}`,
+                    action_type: 'PLAN_DECISION',
+                    action_payload: { ...task.payload, atdiScore: gate.score, trafficLight: gate.trafficLight },
+                    outcome: 'BLOCKED',
+                    governance_check_ref: 'ATDI_GATE',
+                });
+                return { result: { exitCode: 1, stdout: '', stderr: `ATDI Gate: ${gate.reason}`, durationMs: 0 } };
+            }
+            if (gate.trafficLight === 'AMBER') {
+                console.warn(`⚠️ Task [${task.id}] ATDI WARNING: ${gate.reason}`);
+                task.payload = { ...task.payload, atdi_warning: gate.reason, atdi_score: gate.score };
             }
         }
 
