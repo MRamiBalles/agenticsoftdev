@@ -9,7 +9,12 @@ import { PlanningGate } from './memory/planning-gate';
 import { ContextCompactor, SessionEvent } from './memory/context-compactor';
 import { DAGEngine, DAGTask, DAGTaskResult, DAGGraph, TaskDispatchResult } from './dag-engine';
 import { EventBus, AgentMailbox } from './agent-bus';
-import { RetryPolicy } from './retry-policy';
+import { RetryPolicy, TaskType } from './retry-policy';
+import { NegotiationEngine, TaskAuction } from './agent-negotiation';
+import { OutcomeTracker, AdaptationEngine, TaskOutcome } from './agent-learning';
+import { CheckpointManager } from './execution-persistence';
+import { WorkerRegistry, LoadBalancer } from './distributed-executor';
+import { FailureDetector, HealingEngine } from './agent-self-healing';
 
 /**
  * Agentic OS v5.0 - The Kernel
@@ -26,6 +31,24 @@ import { RetryPolicy } from './retry-policy';
  *
  * Phase 4.1: Dynamic Graph Mutation
  *   Runtime task spawning → context isolation → recursion depth limits
+ *
+ * Phase 4.2: Agent Communication Protocol
+ *   EventBus pub/sub → RBAC → forensic logging
+ *
+ * Phase 4.3: Agent Negotiation Protocol
+ *   NegotiationEngine → TaskAuction → consensus strategies
+ *
+ * Phase 4.4: Agent Learning & Adaptation
+ *   OutcomeTracker → AdaptationEngine → bid calibration → retry tuning
+ *
+ * Phase 4.5: Persistent Execution State
+ *   CheckpointManager → SHA-256 integrity → partial restore
+ *
+ * Phase 4.6: Distributed Execution
+ *   WorkerRegistry → LoadBalancer → failover
+ *
+ * Phase 4.7: Agent Self-Healing
+ *   FailureDetector → HealingEngine → escalation
  */
 
 class Orchestrator {
@@ -49,6 +72,24 @@ class Orchestrator {
     // Phase 4.2: Agent Communication
     private eventBus: EventBus;
 
+    // Phase 4.3: Agent Negotiation
+    private negotiationEngine: NegotiationEngine;
+    private taskAuction: TaskAuction;
+
+    // Phase 4.4: Agent Learning & Adaptation
+    private outcomeTracker: OutcomeTracker;
+    private adaptationEngine: AdaptationEngine;
+
+    // Phase 4.5: Persistent Execution State
+    private checkpointManager: CheckpointManager;
+
+    // Phase 4.6: Distributed Execution
+    private workerRegistry: WorkerRegistry;
+
+    // Phase 4.7: Agent Self-Healing
+    private failureDetector: FailureDetector;
+    private healingEngine: HealingEngine;
+
     constructor(projectRoot?: string) {
         this.projectRoot = projectRoot ?? path.resolve(__dirname, '..', '..');
         console.log("🦅 Agentic OS v5.0 Kernel Initializing...");
@@ -71,8 +112,20 @@ class Orchestrator {
             this.retryPolicy,
             {
                 onDispatch: (task) => this.recordSessionEvent(task.agent, 'DISPATCH', `Task ${task.id} dispatched`),
-                onComplete: (task, result) => this.recordSessionEvent(task.agent, 'COMPLETED', `Task ${task.id}: ${result.stdout.slice(0, 100)}`),
-                onFail: (task, result) => this.recordSessionEvent(task.agent, 'FAILURE', `Task ${task.id}: ${result.stderr.slice(0, 100)}`),
+                onComplete: (task, result) => {
+                    this.recordSessionEvent(task.agent, 'COMPLETED', `Task ${task.id}: ${result.stdout.slice(0, 100)}`);
+                    // Phase 4.4: Record success outcome for learning
+                    this.recordTaskOutcome(task, result, true);
+                    // Phase 4.5: Auto-checkpoint trigger
+                    this.triggerAutoCheckpoint(task);
+                },
+                onFail: (task, result) => {
+                    this.recordSessionEvent(task.agent, 'FAILURE', `Task ${task.id}: ${result.stderr.slice(0, 100)}`);
+                    // Phase 4.4: Record failure outcome for learning
+                    this.recordTaskOutcome(task, result, false);
+                    // Phase 4.7: Attempt self-healing
+                    this.attemptSelfHealing(task, result);
+                },
                 onRetry: (task, attempt, delayMs) => this.recordSessionEvent(task.agent, 'RETRY', `Task ${task.id} retry ${attempt} after ${delayMs}ms`),
                 onCircuitBreak: () => this.recordSessionEvent('system', 'CIRCUIT_BREAK', 'Circuit breaker opened. Human intervention required.'),
                 onSpawn: (parent, child) => this.recordSessionEvent(parent.agent, 'SPAWN', `Task ${parent.id} spawned ${child.id} (depth ${child.depth})`),
@@ -109,10 +162,110 @@ class Orchestrator {
             },
         );
 
+        // Initialize Negotiation Protocol (Phase 4.3)
+        this.negotiationEngine = new NegotiationEngine({}, this.eventBus);
+        this.taskAuction = new TaskAuction({}, this.eventBus);
+
+        // Initialize Learning & Adaptation (Phase 4.4)
+        this.outcomeTracker = new OutcomeTracker({}, {
+            onOutcomeRecorded: (outcome) => this.recordSessionEvent(outcome.agent, 'OUTCOME', `${outcome.taskType} ${outcome.success ? 'SUCCESS' : 'FAIL'} in ${outcome.durationMs}ms`),
+        });
+        this.adaptationEngine = new AdaptationEngine(this.outcomeTracker, {}, {
+            onRecommendation: (rec) => this.recordSessionEvent('system', 'ADAPTATION', `${rec.type}: ${rec.description}`),
+        });
+
+        // Initialize Persistent Execution State (Phase 4.5)
+        this.checkpointManager = new CheckpointManager(
+            { autoCheckpointInterval: 5, maxCheckpoints: 10, verifyOnLoad: true },
+            {
+                onCheckpointSaved: (ckpt) => {
+                    this.recordSessionEvent('system', 'CHECKPOINT', `Saved ${ckpt.snapshot.id} (${ckpt.sizeBytes} bytes)`);
+                    this.logger.record({
+                        agent_id: 'system',
+                        trigger_event: 'Checkpoint saved',
+                        context_snapshot: `id=${ckpt.snapshot.id} hash=${ckpt.hash.slice(0, 16)}...`,
+                        chain_of_thought: `Checkpoint ${ckpt.snapshot.id}: ${ckpt.snapshot.graph.tasks.length} tasks, ${ckpt.sizeBytes} bytes`,
+                        action_type: 'PLAN_DECISION',
+                        action_payload: { checkpointId: ckpt.snapshot.id, hash: ckpt.hash },
+                        outcome: 'SUCCESS',
+                    });
+                },
+                onIntegrityViolation: (id, expected, actual) => {
+                    console.error(`🔴 Checkpoint integrity violation: ${id}`);
+                    this.logger.record({
+                        agent_id: 'system',
+                        trigger_event: 'Checkpoint integrity violation',
+                        context_snapshot: `expected=${expected.slice(0, 16)} actual=${actual.slice(0, 16)}`,
+                        chain_of_thought: `INTEGRITY_VIOLATION on checkpoint ${id}`,
+                        action_type: 'SHELL_EXEC',
+                        action_payload: { checkpointId: id, expected, actual },
+                        outcome: 'BLOCKED',
+                    });
+                },
+            },
+        );
+
+        // Initialize Distributed Execution (Phase 4.6)
+        this.workerRegistry = new WorkerRegistry(
+            { heartbeatIntervalMs: 5000, missedHeartbeatsThreshold: 3 },
+            {
+                onWorkerDead: (worker) => {
+                    this.recordSessionEvent('system', 'WORKER_DEAD', `Worker ${worker.id} marked DEAD`);
+                    this.logger.record({
+                        agent_id: 'system',
+                        trigger_event: 'Worker death detected',
+                        context_snapshot: `worker=${worker.id} lastHeartbeat=${worker.lastHeartbeat}`,
+                        chain_of_thought: `Worker ${worker.id} missed heartbeat threshold`,
+                        action_type: 'SHELL_EXEC',
+                        action_payload: { workerId: worker.id, status: worker.status },
+                        outcome: 'FAILURE',
+                    });
+                },
+            },
+        );
+
+        // Initialize Self-Healing (Phase 4.7)
+        this.failureDetector = new FailureDetector();
+        this.healingEngine = new HealingEngine(undefined, undefined, {
+            onHealingAttempt: (record) => {
+                this.recordSessionEvent(record.agent, 'HEAL_ATTEMPT', `${record.actionTaken} for ${record.failure.category} (attempt ${record.attempt})`);
+            },
+            onHealingSuccess: (record) => {
+                this.recordSessionEvent(record.agent, 'HEAL_SUCCESS', `${record.actionTaken} healed ${record.taskId}`);
+                this.logger.record({
+                    agent_id: record.agent,
+                    trigger_event: `Self-healing success: ${record.taskId}`,
+                    context_snapshot: `action=${record.actionTaken} category=${record.failure.category}`,
+                    chain_of_thought: `Healed ${record.taskId} via ${record.actionTaken} after ${record.attempt} attempt(s)`,
+                    action_type: 'SHELL_EXEC',
+                    action_payload: { taskId: record.taskId, action: record.actionTaken, category: record.failure.category },
+                    outcome: 'SUCCESS',
+                });
+            },
+            onEscalation: (event) => {
+                console.error(`🚨 Escalation [${event.level}]: ${event.reason}`);
+                this.recordSessionEvent(event.agent, 'ESCALATION', `${event.level}: ${event.reason}`);
+                this.logger.record({
+                    agent_id: event.agent,
+                    trigger_event: `Escalation: ${event.taskId}`,
+                    context_snapshot: event.reason,
+                    chain_of_thought: `Escalation ${event.level} for ${event.taskId}: ${event.reason}`,
+                    action_type: 'PLAN_DECISION',
+                    action_payload: { taskId: event.taskId, level: event.level, reason: event.reason },
+                    outcome: 'BLOCKED',
+                });
+            },
+        });
+
         console.log("🛡️ Phase 3 Security Pipeline: ARMED");
         console.log("🧠 Phase 3.1 Memory Pipeline: ARMED");
         console.log("🕸️ Phase 4.0 DAG Engine: ARMED");
         console.log("📡 Phase 4.2 Agent Bus: ARMED");
+        console.log("🤝 Phase 4.3 Negotiation Protocol: ARMED");
+        console.log("📈 Phase 4.4 Learning & Adaptation: ARMED");
+        console.log("💾 Phase 4.5 Persistent State: ARMED");
+        console.log("🌐 Phase 4.6 Distributed Execution: ARMED");
+        console.log("🩹 Phase 4.7 Self-Healing: ARMED");
     }
 
     public async boot() {
@@ -160,9 +313,13 @@ class Orchestrator {
     }
 
     /**
-     * Executes the DAG through the full Phase 3/3.1/4.0 pipeline.
+     * Executes the DAG through the full Phase 3–4.7 pipeline.
      */
     private async executeDAG(graph: DAGGraph): Promise<void> {
+        // Phase 4.5: Set graph reference for auto-checkpoints
+        this.currentGraph = graph;
+        this.executionOrder = [];
+
         // Validate graph integrity (Art. III.1: no cycles)
         const validation = this.dagEngine.validate(graph);
         if (!validation.valid) {
@@ -203,6 +360,28 @@ class Orchestrator {
         if (result.circuitBroken) {
             console.error('🔴 Circuit breaker tripped. Manual reset required.');
         }
+
+        // Phase 4.5: Final checkpoint after execution
+        this.checkpointManager.save(
+            graph, this.executionOrder,
+            result.retries, result.spawned, [], [],
+            result.durationMs, 'execution-complete',
+        );
+
+        // Phase 4.4: Generate adaptation recommendations for all agents
+        const agents = new Set<string>();
+        for (const [, task] of graph.tasks) {
+            agents.add(task.agent);
+        }
+        for (const agent of agents) {
+            const recs = this.adaptationEngine.recommend(agent, agent as AgentRole);
+            for (const rec of recs) {
+                console.log(`📈 Adaptation [${agent}]: ${rec.type} — ${rec.description} (confidence: ${rec.confidence.toFixed(2)})`);
+            }
+        }
+
+        // Phase 4.5: Clear graph reference
+        this.currentGraph = undefined;
     }
 
     /**
@@ -391,6 +570,80 @@ class Orchestrator {
             default:
                 return 'SHELL_EXEC';
         }
+    }
+
+    // ─── Phase 4.4: Learning Feedback ───
+
+    /**
+     * Records a task outcome into the OutcomeTracker for learning.
+     */
+    private recordTaskOutcome(task: DAGTask, result: DAGTaskResult, success: boolean): void {
+        const outcome: TaskOutcome = {
+            agent: task.agent,
+            agentRole: task.agent as AgentRole,
+            taskType: task.type,
+            taskId: task.id,
+            success,
+            exitCode: result.exitCode,
+            durationMs: result.durationMs,
+            retryCount: task.retryCount,
+            depth: task.depth,
+            timestamp: Date.now(),
+            errorPattern: success ? undefined : result.stderr.slice(0, 200),
+        };
+        this.outcomeTracker.record(outcome);
+    }
+
+    // ─── Phase 4.5: Auto-Checkpoint ───
+
+    /** Current execution graph reference (set during executeDAG) */
+    private currentGraph?: DAGGraph;
+    private executionOrder: string[] = [];
+
+    /**
+     * Triggers an auto-checkpoint if the interval threshold is met.
+     */
+    private triggerAutoCheckpoint(task: DAGTask): void {
+        if (!this.currentGraph) return;
+        this.executionOrder.push(task.id);
+
+        if (this.checkpointManager.notifyTaskCompleted()) {
+            this.checkpointManager.save(
+                this.currentGraph,
+                this.executionOrder,
+                0, 0, [], [],
+                Date.now(),
+            );
+        }
+    }
+
+    // ─── Phase 4.7: Self-Healing ───
+
+    /**
+     * Attempts to self-heal a failed task using the FailureDetector + HealingEngine.
+     */
+    private attemptSelfHealing(task: DAGTask, result: DAGTaskResult): void {
+        const classification = this.failureDetector.classify(result, result.durationMs);
+
+        // Fire-and-forget: healing is async but DAG callbacks are sync.
+        // The healing result is logged via HealingEngine callbacks (configured in constructor).
+        this.healingEngine.heal(
+            task.id,
+            task.agent,
+            task.type,
+            classification,
+            async (_taskId, action, _failure) => {
+                // Healing executor: attempt a re-dispatch through the sandbox
+                try {
+                    const retryResult = await this.dispatchTask(task);
+                    return retryResult.result.exitCode === 0;
+                } catch {
+                    return false;
+                }
+            },
+        ).catch((err) => {
+            console.error(`❌ Self-healing error for ${task.id}: ${(err as Error).message}`);
+        });
     }
 
     /**
