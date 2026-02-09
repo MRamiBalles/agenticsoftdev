@@ -8,6 +8,7 @@ import { IngestPipeline } from './memory/ingest-pipeline';
 import { PlanningGate } from './memory/planning-gate';
 import { ContextCompactor, SessionEvent } from './memory/context-compactor';
 import { DAGEngine, DAGTask, DAGTaskResult, DAGGraph, TaskDispatchResult } from './dag-engine';
+import { EventBus, AgentMailbox } from './agent-bus';
 import { RetryPolicy } from './retry-policy';
 
 /**
@@ -45,6 +46,9 @@ class Orchestrator {
     private dagEngine: DAGEngine;
     private retryPolicy: RetryPolicy;
 
+    // Phase 4.2: Agent Communication
+    private eventBus: EventBus;
+
     constructor(projectRoot?: string) {
         this.projectRoot = projectRoot ?? path.resolve(__dirname, '..', '..');
         console.log("🦅 Agentic OS v5.0 Kernel Initializing...");
@@ -71,12 +75,44 @@ class Orchestrator {
                 onFail: (task, result) => this.recordSessionEvent(task.agent, 'FAILURE', `Task ${task.id}: ${result.stderr.slice(0, 100)}`),
                 onRetry: (task, attempt, delayMs) => this.recordSessionEvent(task.agent, 'RETRY', `Task ${task.id} retry ${attempt} after ${delayMs}ms`),
                 onCircuitBreak: () => this.recordSessionEvent('system', 'CIRCUIT_BREAK', 'Circuit breaker opened. Human intervention required.'),
+                onSpawn: (parent, child) => this.recordSessionEvent(parent.agent, 'SPAWN', `Task ${parent.id} spawned ${child.id} (depth ${child.depth})`),
+                onSpawnRejected: (parent, req, reason) => this.recordSessionEvent(parent.agent, 'SPAWN_REJECTED', `Task ${parent.id} spawn [${req.id}] rejected: ${reason}`),
+            },
+        );
+
+        // Initialize Agent Communication (Phase 4.2)
+        this.eventBus = new EventBus(
+            { maxMessageSize: 10240, maxChannelDepth: 100, defaultTtlMs: 60000 },
+            {
+                onPublish: (msg) => {
+                    this.logger.record({
+                        agent_id: msg.sender,
+                        trigger_event: `Message published: ${msg.topic}`,
+                        context_snapshot: JSON.stringify(msg.payload).slice(0, 500),
+                        chain_of_thought: `Bus message [${msg.id}] topic=${msg.topic} target=${msg.target ?? 'broadcast'}`,
+                        action_type: 'PLAN_DECISION',
+                        action_payload: { messageId: msg.id, topic: msg.topic, target: msg.target },
+                        outcome: 'SUCCESS',
+                    });
+                },
+                onReject: (sender, topic, reason) => {
+                    this.logger.record({
+                        agent_id: sender,
+                        trigger_event: `Message rejected: ${topic}`,
+                        context_snapshot: reason,
+                        chain_of_thought: `Bus rejection: ${reason}`,
+                        action_type: 'PLAN_DECISION',
+                        action_payload: { topic, reason },
+                        outcome: 'BLOCKED',
+                    });
+                },
             },
         );
 
         console.log("🛡️ Phase 3 Security Pipeline: ARMED");
         console.log("🧠 Phase 3.1 Memory Pipeline: ARMED");
         console.log("🕸️ Phase 4.0 DAG Engine: ARMED");
+        console.log("📡 Phase 4.2 Agent Bus: ARMED");
     }
 
     public async boot() {

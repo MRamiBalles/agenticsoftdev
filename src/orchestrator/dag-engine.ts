@@ -15,6 +15,7 @@
  */
 
 import { RetryPolicy, TaskType } from './retry-policy';
+import type { AgentMessage, AgentMailbox } from './agent-bus';
 
 // ─── Types ───
 
@@ -79,10 +80,22 @@ export interface SpawnRequest {
     payload?: Record<string, unknown>;
 }
 
-/** Extended dispatch result that includes optional spawn requests */
+/** Extended dispatch result that includes optional spawn requests and messages */
 export interface TaskDispatchResult {
     result: DAGTaskResult;
     spawnRequests?: SpawnRequest[];
+    /** Messages to publish on the event bus after task completion */
+    messages?: { topic: string; payload: Record<string, unknown> }[];
+}
+
+/** Context provided to the dispatcher for agent communication */
+export interface AgentContext {
+    /** Scoped mailbox for this agent's communication */
+    mailbox: AgentMailbox;
+    /** Task metadata */
+    taskId: string;
+    parentId?: string;
+    depth: number;
 }
 
 /** Policy configuration for mutation control */
@@ -122,6 +135,8 @@ export interface DAGEngineCallbacks {
     onSpawn?: (parent: DAGTask, child: DAGTask) => void;
     /** Called when a spawn request is rejected */
     onSpawnRejected?: (parent: DAGTask, request: SpawnRequest, reason: string) => void;
+    /** Called when a message is published via the bus */
+    onMessage?: (task: DAGTask, message: AgentMessage) => void;
 }
 
 // ─── Default Config ───

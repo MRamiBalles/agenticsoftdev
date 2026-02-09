@@ -133,4 +133,46 @@ DAGEngine.executeMutating() → MutationController.evaluate() → Graph Injectio
     └─ Callbacks: onSpawn / onSpawnRejected
 ```
 
+## 12. Phase 4.2: Agent Communication Risks
+
+| Threat | Defense Layer | Implementation |
+| :--- | :--- | :--- |
+| **Context Bombing (oversized messages)** | **Message Size Limit** | `EventBus` enforces `maxMessageSize: 10KB`. Exceeding = MESSAGE_TOO_LARGE rejection. |
+| **Bus Flooding (message DoS)** | **Total Message Cap** | `maxTotalMessages: 1000` with FIFO eviction. Oldest messages auto-purged. |
+| **Unauthorized Broadcast** | **RBAC on Publish** | Only `architect` and `strategist` can publish to `agent.broadcast`. All roles checked per topic prefix. |
+| **Eavesdropping (cross-agent leakage)** | **Targeted Messages** | Direct messages (`target` field) only delivered to the named subscriber. Others filtered out. |
+| **Stale Message Poisoning** | **Message TTL** | Default 60s TTL. Expired messages excluded from `getMessages()`. `purgeExpired()` cleans log. |
+| **Subscription Leaks (zombie listeners)** | **Mailbox Dispose** | `AgentMailbox.dispose()` cleans all subscriptions. Scoped per-task lifecycle. |
+| **Bus State Corruption** | **Append-Only Log** | Message log is append-only. No mutation of published messages. All activity forensically logged. |
+| **Coordination Deadlock (barrier starvation)** | **Barrier Design** | Barriers are opt-in with explicit participant count. Non-blocking `isRaised()` check on signals. |
+
+## 13. Phase 4.2 Architecture: Agent Communication Pipeline
+
+```
+EventBus (in-process pub/sub)
+    │
+    ├─ publish(topic, sender, role, payload)
+    │    ├─ Size check (max 10KB)
+    │    ├─ RBAC check (role → topic prefix)
+    │    ├─ Message stored in append-only log
+    │    ├─ FIFO eviction (max 1000 messages)
+    │    └─ Deliver to matching subscribers (exact + wildcard)
+    │
+    ├─ subscribe(topic, subscriber, role, handler)
+    │    ├─ RBAC check (role → topic prefix)
+    │    └─ Wildcard support (e.g., 'task.*')
+    │
+    ├─ AgentMailbox (scoped per-agent view)
+    │    ├─ send() → publish with agent identity
+    │    ├─ on() → subscribe with auto-cleanup
+    │    ├─ inbox() → messages targeted to this agent
+    │    └─ dispose() → unsubscribe all
+    │
+    └─ Coordination Primitives
+         ├─ Barrier: N participants must arrive() before wait() resolves
+         └─ SignalFlag: one-shot raise()/wait() notification
+
+ForensicLogger ← onPublish / onReject callbacks log all bus activity
+```
+
 *Policy: "Security is not a feature; it is a constraint. Memory is not a luxury; it is a necessity. Autonomy without resilience is recklessness."*
