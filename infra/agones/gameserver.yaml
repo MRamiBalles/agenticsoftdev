@@ -1,0 +1,105 @@
+# Agones GameServer Configuration: Galactic Royale
+# Compliance: Platform v5.0 - Sovereign Infrastructure
+
+apiVersion: agones.dev/v1
+kind: GameServer
+metadata:
+  name: galactic-royale-server
+  labels:
+    game: galactic-royale
+    version: "1.0.0"
+spec:
+  # Container Configuration
+  container: gameserver
+  ports:
+    - name: default
+      portPolicy: Dynamic
+      containerPort: 7777
+      protocol: UDP
+  
+  # Health Checking
+  health:
+    disabled: false
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    failureThreshold: 3
+  
+  # SDK Sidecar (for Ready/Shutdown signaling)
+  sdkServer:
+    logLevel: Info
+    grpcPort: 9357
+    httpPort: 9358
+  
+  # Template for the Game Server Pod
+  template:
+    spec:
+      containers:
+        - name: gameserver
+          image: galactic-royale/server:latest
+          imagePullPolicy: Always
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+          env:
+            - name: SERVER_MODE
+              value: "authoritative"
+            - name: MAX_PLAYERS
+              value: "50"
+            - name: TICK_RATE
+              value: "60"
+          ports:
+            - containerPort: 7777
+              protocol: UDP
+
+---
+# Fleet Configuration for Auto-Scaling
+apiVersion: agones.dev/v1
+kind: Fleet
+metadata:
+  name: galactic-royale-fleet
+spec:
+  replicas: 2  # Minimum warm servers
+  
+  # Allocation Strategy: Packed (fill nodes before scaling)
+  # Cost Optimization: Reduces egress by concentrating players
+  scheduling: Packed
+  
+  template:
+    metadata:
+      labels:
+        game: galactic-royale
+    spec:
+      container: gameserver
+      ports:
+        - name: default
+          portPolicy: Dynamic
+          containerPort: 7777
+          protocol: UDP
+      template:
+        spec:
+          containers:
+            - name: gameserver
+              image: galactic-royale/server:latest
+              resources:
+                requests:
+                  memory: "512Mi"
+                  cpu: "500m"
+
+---
+# Fleet Autoscaler (Scale based on Buffer)
+apiVersion: autoscaling.agones.dev/v1
+kind: FleetAutoscaler
+metadata:
+  name: galactic-royale-autoscaler
+spec:
+  fleetName: galactic-royale-fleet
+  policy:
+    type: Buffer
+    buffer:
+      bufferSize: 2      # Keep 2 ready servers
+      minReplicas: 2
+      maxReplicas: 20
