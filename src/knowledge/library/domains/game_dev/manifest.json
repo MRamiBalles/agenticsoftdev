@@ -1,0 +1,24 @@
+{
+    "cartridge_id": "game_dev_v1",
+    "name": "Multiplayer Game Development Pack",
+    "version": "1.0.0",
+    "description": "Expert system for building server-authoritative multiplayer games. Includes Netcode, Gameplay, and QA agents.",
+    "author": "Sovereign Core Team",
+    "compatible_core_version": ">=4.1.0",
+    "tags": [
+        "game-dev",
+        "multiplayer",
+        "unity",
+        "unreal",
+        "godot",
+        "typescript"
+    ],
+    "rules": {
+        "constitution": "./constitution_expansion.md",
+        "pod_topology": "./pod_topology.json"
+    },
+    "templates": {
+        "spec": "./templates/spec.md",
+        "plan": "./templates/plan.md"
+    }
+}
