@@ -78,4 +78,32 @@ Dispatch (PLAN) → PlanningGate.quickConsult() → Contradiction Detection → 
 Shutdown → ContextCompactor.compact() → Session Summary → RetrievalService.ingestChunks()
 ```
 
-*Policy: "Security is not a feature; it is a constraint. Memory is not a luxury; it is a necessity."*
+## 8. Phase 4.0: DAG Orchestration Risks
+
+| Threat | Defense Layer | Implementation |
+| :--- | :--- | :--- |
+| **Cyclic Dependencies (infinite loop)** | **Kahn's Algorithm** | `dag-engine.ts` validates graph before execution. Cycles = CONSTITUTIONAL VIOLATION (Art. III.1). |
+| **Runaway Parallel Execution (resource exhaustion)** | **Concurrency Limiter** | `maxConcurrency: 3` cap prevents fork-bomb patterns. |
+| **Retry Amplification (exponential load)** | **Circuit Breaker** | `retry-policy.ts` halts after N consecutive failures. Exponential backoff + jitter. |
+| **Cascading Failures** | **Dependency Skip** | Failed task → all dependents auto-SKIPPED. No wasted sandbox cycles. |
+| **Retry-based Prompt Injection** | **SecurityGate per dispatch** | Every retry passes through full SecurityGate validation. Error feedback is capped at 2000 chars. |
+| **Stale Task State** | **Immutable Results** | `DAGTaskResult` is write-once per execution. Status transitions are monotonic (PENDING→READY→RUNNING→COMPLETED/FAILED). |
+| **Timeout Evasion** | **Global Timeout** | `maxExecutionTimeMs` (default 5min) force-fails all remaining tasks. |
+
+## 9. Phase 4.0 Architecture: DAG Execution Pipeline
+
+```
+buildTaskGraph() → DAGEngine.validate() → DAGEngine.execute()
+                      │                      │
+                      ├─ Cycle detection      ├─ Topological sort
+                      └─ Missing deps check   ├─ Parallel dispatch (max 3)
+                                              ├─ dispatchTask() per node:
+                                              │    PlanningGate → SecurityGate → Sandbox → ForensicLog
+                                              ├─ RetryPolicy.evaluate() on failure
+                                              │    ├─ Error feedback injection
+                                              │    ├─ Exponential backoff + jitter
+                                              │    └─ Circuit breaker (threshold: 5)
+                                              └─ Dependency cascade (skip on failure)
+```
+
+*Policy: "Security is not a feature; it is a constraint. Memory is not a luxury; it is a necessity. Autonomy without resilience is recklessness."*

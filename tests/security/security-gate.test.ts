@@ -203,4 +203,146 @@ describe('SecurityGate', () => {
             expect(gate.hasPermission('strategist', 'FILE_WRITE')).toBe(false);
         });
     });
+
+    // ─── New Roles: Researcher, DevOps, Designer ───
+
+    describe('Researcher Role', () => {
+        it('should allow researcher to execute RESEARCH tasks', () => {
+            const verdict = gate.validate({
+                agentRole: 'researcher',
+                taskType: 'RESEARCH',
+                payload: { query: 'best serialization library for TypeScript' },
+            });
+            expect(verdict.allowed).toBe(true);
+            expect(verdict.reason).toBe('GATE_PASSED');
+        });
+
+        it('should have WEB_SEARCH and NETWORK_OUTBOUND permissions', () => {
+            expect(gate.hasPermission('researcher', 'WEB_SEARCH')).toBe(true);
+            expect(gate.hasPermission('researcher', 'NETWORK_OUTBOUND')).toBe(true);
+            expect(gate.hasPermission('researcher', 'READ_ONLY')).toBe(true);
+        });
+
+        it('should block researcher from CODE tasks', () => {
+            const verdict = gate.validate({
+                agentRole: 'researcher',
+                taskType: 'CODE',
+                payload: { file: 'src/hack.ts' },
+            });
+            expect(verdict.allowed).toBe(false);
+            expect(verdict.atdiPenalty).toBe(500);
+        });
+
+        it('should block researcher from PLAN tasks', () => {
+            const verdict = gate.validate({
+                agentRole: 'researcher',
+                taskType: 'PLAN',
+                payload: { goal: 'override architecture' },
+            });
+            expect(verdict.allowed).toBe(false);
+        });
+    });
+
+    describe('DevOps Role', () => {
+        it('should allow devops to execute INFRA_PROVISION tasks', () => {
+            const verdict = gate.validate({
+                agentRole: 'devops',
+                taskType: 'INFRA_PROVISION',
+                payload: { target: 'staging-cluster' },
+            });
+            expect(verdict.allowed).toBe(true);
+        });
+
+        it('should allow devops to execute DEPLOY tasks', () => {
+            const verdict = gate.validate({
+                agentRole: 'devops',
+                taskType: 'DEPLOY',
+                payload: { environment: 'production' },
+            });
+            expect(verdict.allowed).toBe(true);
+        });
+
+        it('should have DOCKER_CONTROL, FILE_WRITE, and SHELL_EXEC permissions', () => {
+            expect(gate.hasPermission('devops', 'DOCKER_CONTROL')).toBe(true);
+            expect(gate.hasPermission('devops', 'FILE_WRITE')).toBe(true);
+            expect(gate.hasPermission('devops', 'SHELL_EXEC')).toBe(true);
+            expect(gate.hasPermission('devops', 'READ_ONLY')).toBe(true);
+        });
+
+        it('should block devops from PLAN tasks', () => {
+            const verdict = gate.validate({
+                agentRole: 'devops',
+                taskType: 'PLAN',
+                payload: { goal: 'redesign architecture' },
+            });
+            expect(verdict.allowed).toBe(false);
+        });
+
+        it('should block devops from AUDIT tasks', () => {
+            const verdict = gate.validate({
+                agentRole: 'devops',
+                taskType: 'AUDIT',
+                payload: { target: 'governance' },
+            });
+            expect(verdict.allowed).toBe(false);
+        });
+    });
+
+    describe('Designer Role', () => {
+        it('should allow designer to execute DESIGN tasks', () => {
+            const verdict = gate.validate({
+                agentRole: 'designer',
+                taskType: 'DESIGN',
+                payload: { component: 'MissionControl Dashboard' },
+            });
+            expect(verdict.allowed).toBe(true);
+        });
+
+        it('should have FILE_WRITE and READ_ONLY permissions', () => {
+            expect(gate.hasPermission('designer', 'FILE_WRITE')).toBe(true);
+            expect(gate.hasPermission('designer', 'READ_ONLY')).toBe(true);
+        });
+
+        it('should block designer from SHELL_EXEC', () => {
+            expect(gate.hasPermission('designer', 'SHELL_EXEC')).toBe(false);
+        });
+
+        it('should block designer from AUDIT tasks', () => {
+            const verdict = gate.validate({
+                agentRole: 'designer',
+                taskType: 'AUDIT',
+                payload: { target: 'codebase' },
+            });
+            expect(verdict.allowed).toBe(false);
+        });
+
+        it('should block designer from RESEARCH tasks', () => {
+            const verdict = gate.validate({
+                agentRole: 'designer',
+                taskType: 'RESEARCH',
+                payload: { query: 'best CSS framework' },
+            });
+            expect(verdict.allowed).toBe(false);
+        });
+    });
+
+    // ─── Cross-Role Isolation ───
+
+    describe('Cross-Role Isolation', () => {
+        it('builder should not have DOCKER_CONTROL', () => {
+            expect(gate.hasPermission('builder', 'DOCKER_CONTROL')).toBe(false);
+        });
+
+        it('guardian should not have WEB_SEARCH', () => {
+            expect(gate.hasPermission('guardian', 'WEB_SEARCH')).toBe(false);
+        });
+
+        it('researcher should not have DOCKER_CONTROL', () => {
+            expect(gate.hasPermission('researcher', 'DOCKER_CONTROL')).toBe(false);
+        });
+
+        it('designer should not have NETWORK_OUTBOUND', () => {
+            expect(gate.hasPermission('designer', 'NETWORK_OUTBOUND')).toBe(false);
+        });
+    });
 });

@@ -218,7 +218,7 @@ class Orchestrator {
                 trigger_event: `Task ${task.id} dispatch`,
                 context_snapshot: JSON.stringify(task.payload),
                 chain_of_thought: `Gate blocked: ${verdict.reason}. Threats: ${verdict.threats.join('; ')}`,
-                action_type: task.type === 'PLAN' ? 'PLAN_DECISION' : task.type === 'CODE' ? 'FILE_WRITE' : 'SHELL_EXEC',
+                action_type: this.mapActionType(task.type),
                 action_payload: task.payload,
                 outcome: 'BLOCKED',
                 governance_check_ref: `ATDI+${verdict.atdiPenalty}`,
@@ -240,7 +240,7 @@ class Orchestrator {
                 trigger_event: `Task ${task.id} dispatch`,
                 context_snapshot: JSON.stringify(verdict.sanitizedPayload),
                 chain_of_thought: `Sandbox [${sandboxResult.executionId.slice(0, 8)}]. Exit: ${sandboxResult.exitCode}. Timed out: ${sandboxResult.timedOut}`,
-                action_type: task.type === 'PLAN' ? 'PLAN_DECISION' : task.type === 'CODE' ? 'FILE_WRITE' : 'SHELL_EXEC',
+                action_type: this.mapActionType(task.type),
                 action_payload: {
                     ...verdict.sanitizedPayload,
                     sandbox_execution_id: sandboxResult.executionId,
@@ -296,13 +296,55 @@ class Orchestrator {
                 `;
             case 'AUDIT':
             case 'TEST':
+            case 'REVIEW':
                 return `
                     const payload = ${payloadJson};
                     console.log('[Guardian] Auditing:', payload.target || 'unknown');
                     console.log('Result: Audit complete.');
                 `;
+            case 'RESEARCH':
+                return `
+                    const payload = ${payloadJson};
+                    console.log('[Researcher] Investigating:', payload.query || payload.goal || 'unknown');
+                    console.log('Result: Research report generated.');
+                `;
+            case 'DESIGN':
+                return `
+                    const payload = ${payloadJson};
+                    console.log('[Designer] Designing:', payload.component || payload.target || 'unknown');
+                    console.log('Result: Design artifacts generated.');
+                `;
+            case 'INFRA_PROVISION':
+            case 'DEPLOY':
+                return `
+                    const payload = ${payloadJson};
+                    console.log('[DevOps] Provisioning:', payload.target || payload.environment || 'unknown');
+                    console.log('Result: Infrastructure provisioned.');
+                `;
             default:
-                return `console.error('Unknown task type: ${task.type}');process.exit(1);`;
+                return `console.error('Unknown task type: ${task.type}');process.exit(1)`;
+        }
+    }
+
+    /**
+     * Maps DAG task types to forensic log action types.
+     */
+    private mapActionType(taskType: string): 'PLAN_DECISION' | 'FILE_WRITE' | 'SHELL_EXEC' {
+        switch (taskType) {
+            case 'PLAN':
+            case 'RESEARCH':
+                return 'PLAN_DECISION';
+            case 'CODE':
+            case 'DESIGN':
+                return 'FILE_WRITE';
+            case 'AUDIT':
+            case 'TEST':
+            case 'REVIEW':
+            case 'SHELL':
+            case 'INFRA_PROVISION':
+            case 'DEPLOY':
+            default:
+                return 'SHELL_EXEC';
         }
     }
 

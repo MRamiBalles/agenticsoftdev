@@ -13,7 +13,7 @@
 
 // ─── Types ───
 
-export type TaskType = 'PLAN' | 'CODE' | 'AUDIT' | 'TEST' | 'REVIEW' | 'DEPLOY';
+export type TaskType = 'PLAN' | 'CODE' | 'AUDIT' | 'TEST' | 'REVIEW' | 'DEPLOY' | 'RESEARCH' | 'DESIGN' | 'INFRA_PROVISION';
 
 export interface RetryConfig {
     /** Max retries per task type */
@@ -47,12 +47,15 @@ export interface RetryDecision {
 
 const DEFAULT_CONFIG: RetryConfig = {
     maxRetries: {
-        PLAN: 0,     // Plans are not retried — require human re-specification
-        CODE: 2,     // Builder gets 2 retries with error feedback
-        AUDIT: 0,    // Audits are deterministic — no retry
-        TEST: 1,     // Tests get 1 retry (flaky test defense)
-        REVIEW: 0,   // Reviews are human-gated
-        DEPLOY: 0,   // Deploys require explicit re-approval
+        PLAN: 0,             // Plans are not retried — require human re-specification
+        CODE: 2,             // Builder gets 2 retries with error feedback
+        AUDIT: 0,            // Audits are deterministic — no retry
+        TEST: 1,             // Tests get 1 retry (flaky test defense)
+        REVIEW: 0,           // Reviews are human-gated
+        DEPLOY: 0,           // Deploys require explicit re-approval
+        RESEARCH: 3,         // Web searches are noisy — retry with refined query
+        DESIGN: 1,           // Design iteration gets 1 retry
+        INFRA_PROVISION: 1,  // Infra failures may be transient (rate limits, timeouts)
     },
     baseDelayMs: 500,
     maxDelayMs: 10000,

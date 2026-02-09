@@ -15,14 +15,17 @@ import { sanitizeInput, validateCommand, sanitizeOutput, SanitizeResult } from '
 
 // ─── RBAC Permission Model ───
 
-export type AgentRole = 'architect' | 'builder' | 'guardian' | 'strategist';
-export type Permission = 'PLAN_DECISION' | 'FILE_WRITE' | 'SHELL_EXEC' | 'READ_ONLY' | 'AUDIT';
+export type AgentRole = 'architect' | 'builder' | 'guardian' | 'strategist' | 'researcher' | 'devops' | 'designer';
+export type Permission = 'PLAN_DECISION' | 'FILE_WRITE' | 'SHELL_EXEC' | 'READ_ONLY' | 'AUDIT' | 'WEB_SEARCH' | 'NETWORK_OUTBOUND' | 'DOCKER_CONTROL';
 
 const ROLE_PERMISSIONS: Record<AgentRole, Permission[]> = {
     architect: ['PLAN_DECISION', 'READ_ONLY'],
     builder: ['FILE_WRITE', 'SHELL_EXEC', 'READ_ONLY'],
     guardian: ['READ_ONLY', 'AUDIT'],
     strategist: ['PLAN_DECISION', 'READ_ONLY', 'AUDIT'],
+    researcher: ['READ_ONLY', 'WEB_SEARCH', 'NETWORK_OUTBOUND'],
+    devops: ['FILE_WRITE', 'SHELL_EXEC', 'DOCKER_CONTROL', 'READ_ONLY'],
+    designer: ['FILE_WRITE', 'READ_ONLY'],
 };
 
 // Map task types to required permissions
@@ -31,6 +34,12 @@ const TASK_PERMISSION_MAP: Record<string, Permission> = {
     'CODE': 'FILE_WRITE',
     'AUDIT': 'AUDIT',
     'SHELL': 'SHELL_EXEC',
+    'RESEARCH': 'WEB_SEARCH',
+    'DESIGN': 'FILE_WRITE',
+    'INFRA_PROVISION': 'DOCKER_CONTROL',
+    'TEST': 'AUDIT',
+    'REVIEW': 'AUDIT',
+    'DEPLOY': 'DOCKER_CONTROL',
 };
 
 // ─── Gate Result ───
