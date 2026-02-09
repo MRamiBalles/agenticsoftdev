@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -6,20 +7,62 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const MAX_RULES = 200;
+const MAX_RULE_TEXT_LENGTH = 5000;
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { rules } = await req.json();
+    // --- Auth check ---
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // --- Input validation ---
+    const body = await req.json();
+    const { rules } = body;
+
+    if (!Array.isArray(rules)) throw new Error("rules must be an array");
+    if (rules.length === 0) throw new Error("rules array is empty");
+    if (rules.length > MAX_RULES) throw new Error(`Too many rules (max ${MAX_RULES})`);
+
+    for (const r of rules) {
+      if (!r || typeof r !== "object") throw new Error("Invalid rule format");
+      if (typeof r.code !== "string" || typeof r.name !== "string") {
+        throw new Error("Each rule must have code and name strings");
+      }
+    }
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     const rulesText = rules
+      .slice(0, MAX_RULES)
       .map(
         (r: any) =>
-          `[${r.code}] ${r.name} (Severidad: ${r.severity}, Bloqueada: ${r.is_locked}, Categoría: ${r.category})\n  → ${r.description}`
+          `[${String(r.code).slice(0, 50)}] ${String(r.name).slice(0, 200)} (Severidad: ${String(r.severity ?? "").slice(0, 20)}, Bloqueada: ${r.is_locked}, Categoría: ${String(r.category ?? "").slice(0, 100)})\n  → ${String(r.description ?? "").slice(0, MAX_RULE_TEXT_LENGTH)}`
       )
       .join("\n\n");
 

@@ -1,10 +1,15 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
+
+const MAX_MESSAGES = 100;
+const MAX_MESSAGE_LENGTH = 10000;
+const MAX_CONTEXT_LENGTH = 50000;
 
 const AGENT_PERSONAS: Record<string, { name: string; systemPrompt: string }> = {
   constitute: {
@@ -72,33 +77,83 @@ Responde en español. Sé estricto pero constructivo.`,
   },
 };
 
+function validateMessages(messages: unknown): asserts messages is Array<{ role: string; content: string }> {
+  if (!Array.isArray(messages)) throw new Error("messages must be an array");
+  if (messages.length > MAX_MESSAGES) throw new Error(`Too many messages (max ${MAX_MESSAGES})`);
+  for (const msg of messages) {
+    if (!msg || typeof msg !== "object") throw new Error("Invalid message format");
+    if (typeof msg.role !== "string" || typeof msg.content !== "string") {
+      throw new Error("Each message must have role and content strings");
+    }
+    if (msg.content.length > MAX_MESSAGE_LENGTH) {
+      throw new Error(`Message content too long (max ${MAX_MESSAGE_LENGTH} chars)`);
+    }
+  }
+}
+
+function truncate(text: string, max: number): string {
+  return text.length > max ? text.slice(0, max) + "\n[TRUNCATED]" : text;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { action, phase, messages, context } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+    // --- Auth check ---
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // --- Input validation ---
+    const body = await req.json();
+    const { action, phase, messages, context } = body;
+
+    if (!action || typeof action !== "string") throw new Error("Missing or invalid action");
+    if (!phase || typeof phase !== "string") throw new Error("Missing or invalid phase");
 
     const persona = AGENT_PERSONAS[phase];
     if (!persona) throw new Error(`Unknown phase: ${phase}`);
 
+    validateMessages(messages);
+
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+
     let systemPrompt = persona.systemPrompt;
 
-    // Inject context (constitution, previous docs, etc.)
-    if (context?.constitution) {
-      systemPrompt += `\n\n--- CONSTITUCIÓN DEL PROYECTO ---\n${context.constitution}`;
+    if (context?.constitution && typeof context.constitution === "string") {
+      systemPrompt += `\n\n--- CONSTITUCIÓN DEL PROYECTO ---\n${truncate(context.constitution, MAX_CONTEXT_LENGTH)}`;
     }
-    if (context?.previousDocs) {
+    if (Array.isArray(context?.previousDocs)) {
       for (const doc of context.previousDocs) {
-        systemPrompt += `\n\n--- ${doc.title.toUpperCase()} ---\n${doc.content}`;
+        if (doc && typeof doc.title === "string" && typeof doc.content === "string") {
+          systemPrompt += `\n\n--- ${truncate(doc.title, 200).toUpperCase()} ---\n${truncate(doc.content, MAX_CONTEXT_LENGTH)}`;
+        }
       }
     }
 
     if (action === "stream") {
-      // Streaming response
       const response = await fetch(
         "https://ai.gateway.lovable.dev/v1/chat/completions",
         {
@@ -140,7 +195,6 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
       });
     } else {
-      // Non-streaming (for quick actions like ATDI calculation)
       const response = await fetch(
         "https://ai.gateway.lovable.dev/v1/chat/completions",
         {
