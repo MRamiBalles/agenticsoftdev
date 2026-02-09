@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Phase 3: Security & Isolation
+.sandbox-tmp/
+.ai/audit/ledger.jsonl
